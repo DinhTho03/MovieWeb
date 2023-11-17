@@ -28,7 +28,6 @@ export class DetailMovieService {
   ) {}
   async getDetailMovie(videoId: string): Promise<DetailMovieDTO | null> {
     const video = await this.movieModel.findOne({ _id: videoId }).exec();
-
     if (video) {
       const cast = await this.castModel.find({ videoId: video._id }).exec();
       const genreInfo = await this.fetchGenres(video.genreId);

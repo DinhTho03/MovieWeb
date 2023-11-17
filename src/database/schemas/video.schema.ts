@@ -4,9 +4,6 @@ import { Document, Types } from 'mongoose';
 @Schema()
 export class Video extends Document {
   @Prop({ required: true })
-  name: string;
-
-  @Prop({ required: true })
   title: string;
 
   @Prop({ type: Date }) // Sử dụng kiểu dữ liệu Date cho ReleaseYear

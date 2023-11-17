@@ -16,6 +16,9 @@ class MovieDTO {
   @IsString()
   title: string;
 
+  @IsString()
+  MPARatings: string;
+
   @IsNumber()
   duration: number;
 
