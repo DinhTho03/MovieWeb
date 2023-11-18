@@ -23,7 +23,6 @@ export class FireBaseService {
       const fileParts = file.originalname.split('.');
       const extension = '.' + fileParts[fileParts.length - 1];
       let fileName = '';
-      console.log(file.size);
       if (file.mimetype.match(/\/(jpg|jpeg|png|gif|mp4|webm|ogg)$/)) {
         if (file.mimetype.match(/\/(mp4|webm|ogg)$/)) {
           fileName = `webs/${unixTimestamp}` + extension;
@@ -152,17 +151,15 @@ export class FireBaseService {
     fileName: string,
     newFile: Express.Multer.File,
   ): Promise<any> {
+    console.log(newFile.originalname);
     const tempLocalFile = path.join(os.tmpdir(), newFile.originalname);
-
     try {
-      console.log('newFile', newFile);
       // Validate new file
       if (!newFile || !newFile.originalname || !newFile.buffer) {
         throw new HttpException('Invalid new file data', 200);
       }
 
       // Optional: You can add validation for new file based on your requirements
-
       // Write buffer to local file
       fs.writeFileSync(tempLocalFile, newFile.buffer);
       let folderName;
@@ -172,10 +169,12 @@ export class FireBaseService {
       }
       if (newFile.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
         folderName = 'files';
-        console.log('folderName', folderName);
       }
-      console.log('fileName', fileName);
-      const file = bucket.file(`${folderName}/${fileName}`);
+      const parts = fileName.split('/');
+      const filenameWithQuery = parts[parts.length - 1];
+      const filenameAfterQuery = filenameWithQuery.split('?')[0];
+      const filenameSeparated = filenameAfterQuery.split('2F')[1];
+      const file = bucket.file(`${folderName}/${filenameSeparated}`);
       const [exists] = await file.exists();
       if (exists) {
         // Update file in Firebase Storage
@@ -194,7 +193,6 @@ export class FireBaseService {
             fs.unlinkSync(tempLocalFile);
           });
         fs.createReadStream(tempLocalFile).pipe(res);
-        console.log(1);
         // Optional: You can return updated file details or a success message
         const jsonResponse = new JsonResponse<ImageModel>(true);
         jsonResponse.message = MESSAGES_CODE.UPDATED_SUCCESS;

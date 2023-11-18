@@ -23,7 +23,7 @@ export class MovieRes {
   language: Language[];
 }
 
-export interface CastRes {
+export class CastRes {
   nameInFilm: string;
   nameOfActor: string;
 }

@@ -14,8 +14,6 @@ import { VideoSchema } from './database/schemas/video.schema';
 import { LanguageSchema } from './database/schemas/language.schema';
 import { ListModelModule } from './models/admin/list-model/list-movie.module';
 import { DetailMovieModule } from './models/admin/detail-movie/detail-movie.module';
-import { ModelModule } from './models/base-repository/Movie/model.module';
-import { ModelService } from './models/base-repository/Movie/model.service';
 import { FireBaseService } from './models/base-repository/firebase/fire-base-service/fire-base-service.service';
 
 @Module({
@@ -39,9 +37,8 @@ import { FireBaseService } from './models/base-repository/firebase/fire-base-ser
     ]),
     ListModelModule,
     DetailMovieModule,
-    ModelModule,
   ],
   controllers: [],
-  providers: [ModelService, FireBaseService],
+  providers: [FireBaseService],
 })
 export class AppModule {}

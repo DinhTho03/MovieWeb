@@ -11,6 +11,8 @@ import { Rating, RatingSchema } from 'src/database/schemas/rating.schema';
 import { Genre } from 'src/database/schemas/genre.schema';
 import { Cast, CastSchema } from 'src/database/schemas/cast.schema';
 import { Language, LanguageSchema } from 'src/database/schemas/language.schema';
+import { ListModelService } from '../list-model/list-movie.service';
+import { FireBaseService } from 'src/models/base-repository/firebase/fire-base-service/fire-base-service.service';
 
 @Module({
   imports: [
@@ -23,7 +25,7 @@ import { Language, LanguageSchema } from 'src/database/schemas/language.schema';
       { name: Language.name, schema: LanguageSchema },
     ]),
   ],
-  providers: [DetailMovieService],
+  providers: [DetailMovieService, ListModelService, FireBaseService],
   controllers: [DetailMovieController],
 })
 export class DetailMovieModule {}

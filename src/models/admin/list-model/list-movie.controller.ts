@@ -10,7 +10,7 @@ import {
   UseInterceptors,
   UploadedFiles,
   Logger,
-  NotFoundException,
+  Put,
 } from '@nestjs/common';
 import { ListModelService } from './list-movie.service';
 import { ObjectId } from 'mongodb';
@@ -21,7 +21,7 @@ import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   FilesInterceptor,
 } from '@nestjs/platform-express';
-import { MESSAGES_CODE } from 'src/Constant/status.constants';
+import { TestAPI } from './dto/genre.Dto';
 
 @Controller('list-model')
 export class ListModelController {
@@ -31,6 +31,7 @@ export class ListModelController {
     private firebaseService: FireBaseService,
   ) {}
 
+  // Get all movie
   @Get()
   async findAll(
     @Query('searchQuery') searchQuery: string,
@@ -39,27 +40,26 @@ export class ListModelController {
     return await this.listModelService.FindAll(searchQuery, pageNumber);
   }
 
+  // Delete a movie
   @Delete()
   async deleteAMovie(@Query('id') id: string) {
+    // Convert string to ObjectId
     const objectId = new (ObjectId as any)(id);
     const deleteMovie = await this.listModelService.deleteAMovie(objectId);
-    if (!deleteMovie) {
-      throw new NotFoundException(MESSAGES_CODE.CREATE_FAIL, 'Video not found');
-    }
-    return MESSAGES_CODE.DELETED_SUCCESS;
+    return deleteMovie;
   }
 
+  // Delete list movie
   @Delete('/deleteListMovie')
   async deleteListMovie(@Body('ids') ids: string[]) {
+    // Convert string to ObjectId
     const objectIdList = ids.map((id) => new (ObjectId as any)(id));
     const deleteListMovie =
       await this.listModelService.deleteListMovie(objectIdList);
-    if (deleteListMovie === null) {
-      throw new NotFoundException(MESSAGES_CODE.CREATE_FAIL, 'Video not found');
-    }
-    return MESSAGES_CODE.DELETED_SUCCESS;
+    return deleteListMovie;
   }
 
+  // Add movie
   @Post('/addMovie')
   @UseInterceptors(
     FileFieldsInterceptor([
@@ -75,15 +75,45 @@ export class ListModelController {
     return addMovie;
   }
 
-  // @Post('/upload')
-  // @UseInterceptors(
-  //   FileFieldsInterceptor([
-  //     { name: 'posterImage', maxCount: 1 },
-  //     { name: 'movieUrl', maxCount: 1 },
-  //     { name: 'avatar', maxCount: 10 },
-  //   ]),
-  // )
-  // async addCast(@UploadedFiles() files) {}
+  // Update movie
+  @Put('/updateMovie')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'posterImage', maxCount: 1 },
+      { name: 'movieUrl', maxCount: 1 },
+      { name: 'avatar', maxCount: 10 },
+    ]),
+  )
+  @HttpCode(200)
+  async updateMovie(
+    @Body() id: string,
+    @Body() modelRequest: MovieRes,
+    @UploadedFiles() files,
+  ) {
+    // Convert string to ObjectId
+    const objectId = new (ObjectId as any)(id);
+    const addMovie = await this.listModelService.updateAMovie(
+      objectId,
+      modelRequest,
+      files,
+    );
+    return addMovie;
+  }
+
+  @Post('/upload')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'posterImage', maxCount: 1 },
+      { name: 'movieUrl', maxCount: 1 },
+      { name: 'avatar', maxCount: 10 },
+    ]),
+  )
+  async addCast(@Body() model: TestAPI, @UploadedFiles() files) {
+    console.log(model);
+    const addCast2 = files.avatar[0];
+    console.log(addCast2);
+    return null;
+  }
 
   // @HttpCode(200)
   // @Post('/uploadFile')

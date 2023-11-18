@@ -9,7 +9,6 @@ import {
 } from 'src/database/schemas/favorite.schema';
 import { Rating, RatingSchema } from 'src/database/schemas/rating.schema';
 import { Genre, GenreSchema } from 'src/database/schemas/genre.schema';
-import { ModelService } from '../../base-repository/Movie/model.service';
 import { FireBaseService } from 'src/models/base-repository/firebase/fire-base-service/fire-base-service.service';
 import { Language, LanguageSchema } from 'src/database/schemas/language.schema';
 import { Cast, CastSchema } from 'src/database/schemas/cast.schema';
@@ -32,6 +31,6 @@ import { Cast, CastSchema } from 'src/database/schemas/cast.schema';
     ]),
   ],
   controllers: [ListModelController],
-  providers: [ListModelService, ModelService, FireBaseService],
+  providers: [ListModelService, FireBaseService],
 })
 export class ListModelModule {}

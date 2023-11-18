@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { Cast } from 'src/database/schemas/cast.schema';
@@ -9,6 +9,9 @@ import { Video } from 'src/database/schemas/video.schema';
 import DetailMovieDTO from './dto/detailMovie.Dto';
 import { Language } from 'src/database/schemas/language.schema';
 import { ObjectId } from 'mongodb';
+import { ListModelService } from '../list-model/list-movie.service';
+import { MESSAGES_CODE } from 'src/Constant/status.constants';
+import { MovieRes } from '../list-model/dto/Movie.model';
 
 @Injectable()
 export class DetailMovieService {
@@ -25,18 +28,19 @@ export class DetailMovieService {
     private castModel: mongoose.Model<Cast>,
     @InjectModel(Language.name)
     private languageModel: mongoose.Model<Language>,
+    private readonly listModelService: ListModelService,
   ) {}
-  async getDetailMovie(videoId: string): Promise<DetailMovieDTO | null> {
+  async getDetailMovie(videoId: string): Promise<any> {
     const video = await this.movieModel.findOne({ _id: videoId }).exec();
     if (video) {
       const cast = await this.castModel.find({ videoId: video._id }).exec();
       const genreInfo = await this.fetchGenres(video.genreId);
       const languageInfo = await this.fetchLanguages(video.languageId);
       const ratingInfo = await this.ratingModel.find({ videoId: video.id });
-      const languages = await this.favoritesModel.find({
+      const favoritesInfo = await this.favoritesModel.find({
         videoId: video.id,
       });
-      const aNumberOfLike = languages.length;
+      const aNumberOfLike = favoritesInfo.length;
       let valueRating = 0;
       for (const rating of ratingInfo) {
         valueRating += rating.value;
@@ -64,18 +68,26 @@ export class DetailMovieService {
 
       return getdetailMovie;
     } else {
-      return null; // Handle the case where no video is found with the given videoId
+      return new NotFoundException(MESSAGES_CODE.GET_FAIL, 'Video not found'); // Handle the case where no video is found with the given videoId
     }
   }
 
-  async deleteAMovie(videoId: ObjectId): Promise<void> {
-    const video = await this.movieModel.findById({ _id: videoId }).exec();
+  async deleteAMovie(videoId: ObjectId): Promise<any> {
+    const deleteMovie = await this.listModelService.deleteAMovie(videoId);
+    return deleteMovie;
+  }
 
-    if (video === null) {
-      throw new Error('Video not found');
-    } else {
-      await this.movieModel.findByIdAndDelete(videoId).exec();
-    }
+  async updateAMovie(
+    id: ObjectId,
+    modelRequest: MovieRes,
+    files: any,
+  ): Promise<any> {
+    const update = await this.listModelService.updateAMovie(
+      id,
+      modelRequest,
+      files,
+    );
+    return update;
   }
 
   private async fetchGenres(genre: string[]): Promise<Genre[]> {
