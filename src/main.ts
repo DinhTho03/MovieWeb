@@ -25,7 +25,6 @@ async function bootstrap() {
 
   // process
   process.setMaxListeners(20);
-
   // cors
   app.enableCors({
     origin: '*',

@@ -15,6 +15,18 @@ import { LanguageSchema } from './database/schemas/language.schema';
 import { ListModelModule } from './models/admin/list-model/list-movie.module';
 import { DetailMovieModule } from './models/admin/detail-movie/detail-movie.module';
 import { FireBaseService } from './models/base-repository/firebase/fire-base-service/fire-base-service.service';
+import { VideoplayService } from './models/user/videoplay/videoplay.service';
+import { VideoplayController } from './models/user/videoplay/videoplay.controller';
+import { VideoplayModule } from './models/user/videoplay/videoplay.module';
+import { HomeModule } from './models/user/home/home.module';
+import { AuthService } from './models/auth/auth.service';
+import { AuthController } from './models/auth/auth.controller';
+import { AuthModule } from './models/auth/auth.module';
+// import { APP_GUARD } from '@nestjs/core';
+// import { JwtAuthGuard } from './models/auth/strategies/auth.guard';
+import { TopRatedController } from './models/user/top-rated/top-rated.controller';
+import { TopRatedModule } from './models/user/top-rated/top-rated.module';
+import { TopRatedService } from './models/user/top-rated/top-rated.service';
 
 @Module({
   imports: [
@@ -37,8 +49,21 @@ import { FireBaseService } from './models/base-repository/firebase/fire-base-ser
     ]),
     ListModelModule,
     DetailMovieModule,
+    VideoplayModule,
+    HomeModule,
+    AuthModule,
+    TopRatedModule,
   ],
-  controllers: [],
-  providers: [FireBaseService],
+  controllers: [VideoplayController, AuthController, TopRatedController],
+  providers: [
+    FireBaseService,
+    VideoplayService,
+    AuthService,
+    TopRatedService,
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: JwtAuthGuard,
+    // },
+  ],
 })
 export class AppModule {}

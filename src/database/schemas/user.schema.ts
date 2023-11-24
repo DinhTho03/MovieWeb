@@ -25,7 +25,7 @@ export class User extends Document {
   @Prop({ required: true })
   phoneNumber: string;
 
-  @Prop({ type: Types.ObjectId, required: true })
+  @Prop({ type: Types.ObjectId, required: true, ref: 'Role' })
   roleId: string;
 }
 

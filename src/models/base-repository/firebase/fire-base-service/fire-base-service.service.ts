@@ -6,9 +6,18 @@ import * as admin from 'firebase-admin';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import { Video } from 'src/database/schemas/video.schema';
+import mongoose from 'mongoose';
+import { Cast } from 'src/database/schemas/cast.schema';
+import { InjectModel } from '@nestjs/mongoose';
 @Injectable()
 export class FireBaseService {
-  constructor() {}
+  constructor(
+    @InjectModel(Video.name)
+    private movieModel: mongoose.Model<Video>,
+    @InjectModel(Cast.name)
+    private castModel: mongoose.Model<Cast>,
+  ) {}
   async upload(file: Express.Multer.File): Promise<any> {
     const tempLocalFile = path.join(os.tmpdir(), file.originalname);
 
@@ -23,23 +32,123 @@ export class FireBaseService {
       const fileParts = file.originalname.split('.');
       const extension = '.' + fileParts[fileParts.length - 1];
       let fileName = '';
-      if (file.mimetype.match(/\/(jpg|jpeg|png|gif|mp4|webm|ogg)$/)) {
-        if (file.mimetype.match(/\/(mp4|webm|ogg)$/)) {
-          fileName = `webs/${unixTimestamp}` + extension;
-          if (file.size > 1024 * 1024 * 1024) {
-            throw new HttpException('File size exceeds 10240MB', 500);
-          }
-        } else if (file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
-          fileName = `files/${unixTimestamp}` + extension;
-          if (file.size > 5 * 1024 * 1024) {
-            throw new HttpException('File size exceeds 5MB', 200);
-          }
-        }
+      let maxSize, fileType;
+      if (file.mimetype.match(/\/(mp4|webm|ogg)$/)) {
+        fileName = `webs/${unixTimestamp}` + extension;
+        maxSize = 1024 * 1024 * 1024;
+        fileType = 'video';
+      } else if (file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+        fileName = `files/${unixTimestamp}` + extension;
+        maxSize = 5 * 1024 * 1024;
+        fileType = 'image';
       } else {
         throw new HttpException(
           'File type not allowed (jpg/jpeg/png/gif)',
           200,
         );
+      }
+      // Validate file size
+      if (file.size > maxSize) {
+        throw new HttpException(
+          `File size exceeds ${maxSize / (1024 * 1024)}MB`,
+          200,
+        );
+      }
+      // Write buffer to local file
+      fs.writeFileSync(tempLocalFile, file.buffer);
+
+      this.uploadToStorage(tempLocalFile, fileName, file.mimetype, fileType);
+      console.log('fileName', fileName);
+      // Respond immediately with JSON
+      const jsonResponse = new JsonResponse<ImageModel>(true);
+      jsonResponse.message = MESSAGES_CODE.UPLOAD_SUCCESS;
+      jsonResponse.result = {
+        name: fileName, // You might want to adjust this based on your storage structure
+        url: 'pending', // You can use this to indicate that the upload is still in progress
+      } as ImageModel;
+      return jsonResponse;
+    } catch (error) {
+      // Remove local file in case of error
+      if (fs.existsSync(tempLocalFile)) {
+        fs.unlinkSync(tempLocalFile);
+      }
+
+      throw new HttpException(error.toString(), 200);
+    }
+  }
+
+  async uploadToStorage(
+    tempLocalFile: string,
+    fileName: string,
+    mimeType: string,
+    fileType: string,
+  ): Promise<void> {
+    try {
+      const bucket = admin.storage().bucket();
+      const res = await bucket.upload(tempLocalFile, {
+        destination: fileName,
+        metadata: {
+          cacheControl: 'public, max-age=31536000',
+          contentType: mimeType,
+          metadata: {
+            firebaseStorageDownloadTokens: '',
+          },
+        },
+      });
+      // Remove local file
+      fs.unlinkSync(tempLocalFile);
+      console.log(fileName);
+      const response = res[0];
+      if (fileType === 'video') {
+        const video = await this.movieModel
+          .findOne({ movieLink: fileName })
+          .exec();
+
+        if (video) {
+          video.movieLink = `https://firebasestorage.googleapis.com/v0/b/${response.metadata.bucket}/o/${response.id}?alt=media`;
+          await video.save();
+        }
+      }
+      if (fileType === 'image') {
+        const video = await this.movieModel
+          .findOne({ posterImage: fileName })
+          .exec();
+
+        if (video) {
+          video.posterImage = `https://firebasestorage.googleapis.com/v0/b/${response.metadata.bucket}/o/${response.id}?alt=media`;
+          await video.save();
+        }
+      }
+    } catch (error) {
+      // Remove local file in case of error
+      if (fs.existsSync(tempLocalFile)) {
+        fs.unlinkSync(tempLocalFile);
+      }
+
+      throw new HttpException(error.toString(), 200);
+    }
+  }
+
+  async uploadAvatar(file: Express.Multer.File): Promise<any> {
+    const tempLocalFile = path.join(os.tmpdir(), file.originalname);
+
+    try {
+      // Validate file image
+      if (!file || !file.originalname || !file.buffer) {
+        throw new HttpException('Invalid file data', 200);
+      }
+
+      const dateTime = new Date();
+      const unixTimestamp = Math.floor(dateTime.getTime() / 1000);
+      const fileParts = file.originalname.split('.');
+      const extension = '.' + fileParts[fileParts.length - 1];
+      let fileName = '';
+      if (file?.size > 5 * 1024 * 1024) {
+        throw new HttpException('file size > 5MB', 200);
+      } else if (!file?.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+        throw new HttpException('file not match type (jpg/jpeg/png/gif)', 200);
+      } else {
+        fileName = `avatar/${unixTimestamp}` + extension;
       }
 
       // Write buffer to local file
@@ -183,6 +292,9 @@ export class FireBaseService {
             metadata: {
               cacheControl: 'public, max-age=31536000',
               contentType: newFile.mimetype,
+              metadata: {
+                firebaseStorageDownloadTokens: '',
+              },
             },
           })
           .on('error', (error) => {
@@ -192,6 +304,7 @@ export class FireBaseService {
             // Remove local file
             fs.unlinkSync(tempLocalFile);
           });
+        // Pipe the file stream into the upload streamS
         fs.createReadStream(tempLocalFile).pipe(res);
         // Optional: You can return updated file details or a success message
         const jsonResponse = new JsonResponse<ImageModel>(true);

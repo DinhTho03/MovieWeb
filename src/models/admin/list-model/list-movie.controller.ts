@@ -11,6 +11,7 @@ import {
   UploadedFiles,
   Logger,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { ListModelService } from './list-movie.service';
 import { ObjectId } from 'mongodb';
@@ -22,6 +23,12 @@ import {
   FilesInterceptor,
 } from '@nestjs/platform-express';
 import { TestAPI } from './dto/genre.Dto';
+import { AuthGuard } from '@nestjs/passport';
+import { Roles } from 'src/models/auth/decorator/roles.decorator';
+import { RolesGuard } from 'src/models/auth/guards/roles.guard';
+// import { JwtAuthGuard } from 'src/models/auth/strategies/auth.guard';
+// import { RolesGuard } from 'src/models/auth/strategies/roles.guard';
+// import { Roles } from 'src/models/auth/strategies/roles.decorator';
 
 @Controller('list-model')
 export class ListModelController {
@@ -33,6 +40,8 @@ export class ListModelController {
 
   // Get all movie
   @Get()
+  @UseGuards(RolesGuard)
+  @Roles('Admin')
   async findAll(
     @Query('searchQuery') searchQuery: string,
     @Query('pageNumber') pageNumber: number = 1,
@@ -42,6 +51,8 @@ export class ListModelController {
 
   // Delete a movie
   @Delete()
+  @UseGuards(RolesGuard)
+  @Roles('Admin')
   async deleteAMovie(@Query('id') id: string) {
     // Convert string to ObjectId
     const objectId = new (ObjectId as any)(id);
@@ -51,6 +62,8 @@ export class ListModelController {
 
   // Delete list movie
   @Delete('/deleteListMovie')
+  @UseGuards(RolesGuard)
+  @Roles('Admin')
   async deleteListMovie(@Body('ids') ids: string[]) {
     // Convert string to ObjectId
     const objectIdList = ids.map((id) => new (ObjectId as any)(id));
@@ -61,6 +74,8 @@ export class ListModelController {
 
   // Add movie
   @Post('/addMovie')
+  @UseGuards(RolesGuard)
+  @Roles('Admin')
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'posterImage', maxCount: 1 },
@@ -77,6 +92,8 @@ export class ListModelController {
 
   // Update movie
   @Put('/updateMovie')
+  @UseGuards(RolesGuard)
+  @Roles('Admin')
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'posterImage', maxCount: 1 },
@@ -99,21 +116,13 @@ export class ListModelController {
     );
     return addMovie;
   }
-
-  @Post('/upload')
-  @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'posterImage', maxCount: 1 },
-      { name: 'movieUrl', maxCount: 1 },
-      { name: 'avatar', maxCount: 10 },
-    ]),
-  )
-  async addCast(@Body() model: TestAPI, @UploadedFiles() files) {
-    console.log(model);
-    const addCast2 = files.avatar[0];
-    console.log(addCast2);
-    return null;
-  }
+  // @Post('/upload')
+  // @UseGuards(RolesGuard)
+  // @Roles('Admin')
+  // @UseInterceptors(FileFieldsInterceptor([{ name: 'movieUrl', maxCount: 1 }]))
+  // async addCast(@Body() model: TestAPI, @UploadedFiles() files) {
+  //   return true;
+  // }
 
   // @HttpCode(200)
   // @Post('/uploadFile')

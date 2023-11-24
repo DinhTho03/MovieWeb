@@ -256,7 +256,9 @@ export class ListModelService {
       for (const i of modelRequest.cast) {
         const nameCastInFilm = capitalizeFirstLetter(i.nameInFilm);
         const nameCastOfActor = capitalizeFirstLetter(i.nameOfActor);
-        const avatar = await this.firebaseService.upload(files.avatar[count]);
+        const avatar = await this.firebaseService.uploadAvatar(
+          files.avatar[count],
+        );
         const idAvatar = avatar.result.url;
         const castStore = new this.castModel();
         castStore.nameInFilm = nameCastInFilm;
@@ -299,8 +301,8 @@ export class ListModelService {
       }
       const idImage = await this.firebaseService.upload(files.posterImage[0]);
       const idMovie = await this.firebaseService.upload(files.movieUrl[0]);
-      video.posterImage = await idImage.result.url;
-      video.movieLink = await idMovie.result.url;
+      video.posterImage = await idImage.result.name;
+      video.movieLink = await idMovie.result.name;
       // Insert data
       await this.movieModel.create(video);
       await this.castModel.create(casts);

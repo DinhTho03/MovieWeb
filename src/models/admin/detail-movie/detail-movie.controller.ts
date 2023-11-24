@@ -7,21 +7,28 @@ import {
   Put,
   Query,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { DetailMovieService } from './detail-movie.service';
 import { ObjectId } from 'mongodb';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { MovieRes } from '../list-model/dto/Movie.model';
+import { RolesGuard } from 'src/models/auth/guards/roles.guard';
+import { Roles } from 'src/models/auth/decorator/roles.decorator';
 
 @Controller('detail-movie')
 export class DetailMovieController {
   constructor(private detailMovie: DetailMovieService) {}
   @Get()
+  @UseGuards(RolesGuard)
+  @Roles('Admin')
   async getDetailMovie(@Query('id') id: string) {
     return await this.detailMovie.getDetailMovie(id);
   }
   @Delete()
+  @UseGuards(RolesGuard)
+  @Roles('Admin')
   async deleteMovie(@Query('id') id: string) {
     const objectId = new (ObjectId as any)(id);
     const deleteMovie = await this.detailMovie.deleteAMovie(objectId);
@@ -30,6 +37,8 @@ export class DetailMovieController {
 
   // Update movie
   @Put('/updateMovie')
+  @UseGuards(RolesGuard)
+  @Roles('Admin')
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'posterImage', maxCount: 1 },
