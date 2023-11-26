@@ -1,0 +1,31 @@
+import mongoose from 'mongoose';
+import { ObjectId } from 'mongodb';
+import { Video } from 'src/database/schemas/video.schema';
+import { Favorites } from 'src/database/schemas/favorite.schema';
+import { Rating } from 'src/database/schemas/rating.schema';
+import { Genre } from 'src/database/schemas/genre.schema';
+import MoviesResponseDTO from './dto/MoviesResponse.Dto';
+import { MovieRes } from './dto/Movie.model';
+import { Cast } from 'src/database/schemas/cast.schema';
+import { FireBaseService } from 'src/models/base-repository/firebase/fire-base-service/fire-base-service.service';
+import { Language } from 'src/database/schemas/language.schema';
+export declare class ListModelService {
+    private movieModel;
+    private favoritesModel;
+    private ratingModel;
+    private genreModel;
+    private langugeModel;
+    private castModel;
+    private readonly firebaseService;
+    private pageSize;
+    constructor(movieModel: mongoose.Model<Video>, favoritesModel: mongoose.Model<Favorites>, ratingModel: mongoose.Model<Rating>, genreModel: mongoose.Model<Genre>, langugeModel: mongoose.Model<Language>, castModel: mongoose.Model<Cast>, firebaseService: FireBaseService);
+    FindAll(searchQuery: string | undefined, additionDate: boolean | undefined, sortbyView: boolean | undefined, sortByLike: boolean | undefined, sortByRating: boolean | undefined, pageNumber?: number): Promise<MoviesResponseDTO>;
+    updateAMovie(id: ObjectId, modelRequest: MovieRes, files: any): Promise<any>;
+    addMovie(modelRequest: MovieRes, files: any): Promise<any>;
+    deleteAMovie(id: ObjectId): Promise<any>;
+    deleteListMovie(idList: ObjectId[]): Promise<any>;
+    private fetchRatings;
+    private fetchFavorites;
+    private fetchGenres;
+    private calculateAverageRating;
+}

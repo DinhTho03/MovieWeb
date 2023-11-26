@@ -1,0 +1,11 @@
+[debug] [2023-11-09T08:46:32.167Z] ----------------------------------------------------------------------
+[debug] [2023-11-09T08:46:32.169Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\ADMIN\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js serve --debug
+[debug] [2023-11-09T08:46:32.169Z] CLI Version:   12.8.0
+[debug] [2023-11-09T08:46:32.169Z] Platform:      win32
+[debug] [2023-11-09T08:46:32.169Z] Node Version:  v16.17.0
+[debug] [2023-11-09T08:46:32.170Z] Time:          Thu Nov 09 2023 15:46:32 GMT+0700 (Indochina Time)
+[debug] [2023-11-09T08:46:32.170Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2023-11-09T08:46:32.175Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[error] 
+[error] Error: Not in a Firebase app directory (could not locate firebase.json)
