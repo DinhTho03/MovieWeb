@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
-import { Cast } from 'src/database/schemas/cast.schema';
+// import { Cast } from 'src/database/schemas/cast.schema';
 import { Favorites } from 'src/database/schemas/favorite.schema';
 import { Genre } from 'src/database/schemas/genre.schema';
 import { Rating } from 'src/database/schemas/rating.schema';
@@ -24,8 +24,8 @@ export class DetailMovieService {
     private ratingModel: mongoose.Model<Rating>,
     @InjectModel(Genre.name)
     private genreModel: mongoose.Model<Genre>,
-    @InjectModel(Cast.name)
-    private castModel: mongoose.Model<Cast>,
+    // @InjectModel(Cast.name)
+    // private castModel: mongoose.Model<Cast>,
     @InjectModel(Language.name)
     private languageModel: mongoose.Model<Language>,
     private readonly listModelService: ListModelService,
@@ -33,7 +33,7 @@ export class DetailMovieService {
   async getDetailMovie(videoId: string): Promise<any> {
     const video = await this.movieModel.findOne({ _id: videoId }).exec();
     if (video) {
-      const cast = await this.castModel.find({ videoId: video._id }).exec();
+      // const cast = await this.castModel.find({ videoId: video._id }).exec();
       const genreInfo = await this.fetchGenres(video.genreId);
       const languageInfo = await this.fetchLanguages(video.languageId);
       const ratingInfo = await this.ratingModel.find({ videoId: video.id });
@@ -61,7 +61,7 @@ export class DetailMovieService {
         country: video.country,
         like: aNumberOfLike, // You need to fetch the "like" count from somewhere
         additionDate: video.additionDate,
-        cast: cast,
+        // cast: cast,
         genre: genreInfo,
         language: languageInfo,
       };

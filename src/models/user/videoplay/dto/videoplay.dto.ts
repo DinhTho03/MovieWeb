@@ -1,4 +1,4 @@
-import { Cast } from 'src/database/schemas/cast.schema';
+// import { Cast } from 'src/database/schemas/cast.schema';
 import { Genre } from 'src/database/schemas/genre.schema';
 
 export class VideoPlayDTO {
@@ -7,6 +7,6 @@ export class VideoPlayDTO {
   movieLink: string;
   mpaRatings: string;
   content: string;
-  cast: Cast[];
+  // cast: Cast[];
   genre: Genre[];
 }

@@ -9,7 +9,8 @@ export class GetMovieHomeDTO {
   id: string;
   title: string;
   genre: Genre[];
-  movieUrl: string;
+  posterImage: string;
+  averageRating: number;
 }
 
 export class RatingDTO {

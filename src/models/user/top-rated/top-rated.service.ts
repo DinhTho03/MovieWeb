@@ -29,11 +29,21 @@ export class TopRatedService {
     getTopRatingDTO.getMovieHomeDTO = [];
     for (const item of movie) {
       const genre = await this.fetchGenres(item.genreId);
+
+      const ratings = await this.ratingModel
+        .aggregate([
+          { $match: { videoId: item._id.toString() } },
+          { $group: { _id: null, averageRating: { $avg: '$value' } } },
+        ])
+        .exec();
+
+      const averageRating = ratings.length > 0 ? ratings[0].averageRating : 0;
       getTopRatingDTO.getMovieHomeDTO.push({
         id: item._id,
         title: item.title,
         genre: genre,
-        movieUrl: item.movieLink,
+        posterImage: item.posterImage,
+        averageRating: averageRating,
       });
     }
     const rating = await this.ratingModel.aggregate([

@@ -35,77 +35,77 @@ export class ListModelService {
     private readonly firebaseService: FireBaseService,
   ) {}
 
-  // Find All Movie
   async FindAll(
     searchQuery: string | undefined,
-    // additionDate: boolean | undefined,
-    // sortbyView: boolean | undefined,
-    // sortByLike: boolean | undefined,
-    // sortByRating: boolean | undefined,
+    additionDate: boolean | undefined,
+    sortbyView: boolean | undefined,
+    sortByLike: boolean | undefined,
+    sortByRating: boolean | undefined,
     pageNumber: number = 1,
   ): Promise<MoviesResponseDTO> {
     const skipAmount = this.pageSize * (pageNumber - 1);
-    let videoFilter: Video[] = [];
 
+    // Define the base query for movieModel
+    const baseQuery = this.movieModel.find();
+
+    // Apply search query if provided
     if (searchQuery) {
-      // Perform a case-insensitive title search
       const titleRegex = new RegExp(searchQuery, 'i');
-      videoFilter = await this.movieModel
-        .find({ title: titleRegex })
-        .skip(skipAmount)
-        .limit(this.pageSize)
-        .exec();
-      const genreRegex = new RegExp(searchQuery, 'i');
-      const genre = await this.genreModel.findOne({ name: genreRegex }).exec();
-      if (genre) {
-        const videosByGenre = await this.movieModel
-          .find({ genreId: { $in: genre._id } }) // Use the genreIdString directly
-          .skip(skipAmount)
-          .limit(this.pageSize)
-          .exec();
-        // Append the videos from videosByGenre into videoFilter
-        videoFilter = videoFilter.concat(videosByGenre);
-      }
+      baseQuery.or([{ title: titleRegex }, { genre: titleRegex }]);
     }
-    if (videoFilter.length === 0) {
-      // If no search term or no matching videos, retrieve all videos with pagination
-      videoFilter = await this.movieModel
-        .find()
-        .skip(skipAmount)
-        .limit(this.pageSize)
-        .exec();
+    baseQuery.sort({ additionDate: -1 });
+    // Apply sorting additionDate
+    if (additionDate) {
+      baseQuery.sort({ additionDate: 1 });
     }
-    // Để tính tổng số trang, bạn có thể sử dụng một truy vấn riêng biệt
+    // Apply sorting View
+    else if (sortbyView) {
+      baseQuery.sort({ view: -1 });
+    }
+
+    // Paginate the results
+    const videoFilter = await baseQuery
+      .skip(skipAmount)
+      .limit(this.pageSize)
+      .exec();
+
+    // Calculate total pages
     const totalPage = Math.ceil(
       (await this.movieModel.countDocuments()) / this.pageSize,
     );
 
-    const listProducts: MovieDTO[] = [];
-    for (const video of videoFilter) {
-      // Fetch ratings for the video
-      const ratings = await this.fetchRatings(video.id);
-      // Fetch favorites for the video
-      const favorites = await this.fetchFavorites(video.id);
-      // Calculate the average rating for the video
-      const { averageRating, quality } = this.calculateAverageRating(ratings);
-      // Fetch genre information for the video
-      const genreInfo = await this.fetchGenres(video.genreId); // Replace with your actual function to fetch genres
+    // Process and transform results
+    const listProducts: MovieDTO[] = await Promise.all(
+      videoFilter.map(async (video) => {
+        const ratings = await this.fetchRatings(video.id);
+        console.log(ratings);
+        const favorites = await this.fetchFavorites(video.id);
+        const { averageRating, quality } = this.calculateAverageRating(ratings);
+        const genreInfo = await this.fetchGenres(video.genreId);
 
-      // Populate ListProductModel instance
-      const listProduct: MovieDTO = {
-        id: video.id,
-        MPARatings: video.mpaRatings,
-        title: video.title,
-        duration: video.duration,
-        posterImage: `http://streamapi.com/images/${video.posterImage}`,
-        view: video.view,
-        additionDate: video.additionDate,
-        rating: { rating: averageRating, quality },
-        like: favorites.length, // Count of favorites
-        genre: genreInfo, // You can populate this based on your data model
-      };
-      listProducts.push(listProduct);
+        return {
+          id: video.id,
+          MPARatings: video.mpaRatings,
+          title: video.title,
+          duration: video.duration,
+          posterImage: `${video.posterImage}`,
+          view: video.view,
+          additionDate: video.additionDate,
+          rating: { rating: averageRating, quality },
+          like: favorites.length,
+          genre: genreInfo,
+        };
+      }),
+    );
+    // Apply sorting Like
+    if (sortByLike) {
+      listProducts.sort((a, b) => b.like - a.like);
     }
+    // Apply sorting Rating
+    else if (sortByRating) {
+      listProducts.sort((a, b) => b.rating.rating - a.rating.rating);
+    }
+
     return {
       data: listProducts,
       total: totalPage,
@@ -140,57 +140,57 @@ export class ListModelService {
       video.country = modelRequest.country;
       video.releaseYear = modelRequest.releaseYear;
       video.additionDate = new Date();
-      const casts: Cast[] = [];
-      let count = 0;
-      const existingCast = await this.fetchCast(video.castId);
-      for (const i of modelRequest.cast) {
-        // Check if the cast already exists in the movie
-        const nameCastInFilm = capitalizeFirstLetter(i.nameInFilm);
-        const nameCastOfActor = capitalizeFirstLetter(i.nameOfActor);
-        const existing = existingCast.find(
-          (castId) => castId.nameInFilm === nameCastInFilm,
-        );
-        const avatar = await this.firebaseService.upload(files.avatar[count]);
-        const idAvatar = avatar.result.url;
+      // const casts: Cast[] = [];
+      // let count = 0;
+      // const existingCast = await this.fetchCast(video.castId);
+      // for (const i of modelRequest.cast) {
+      //   // Check if the cast already exists in the movie
+      //   const nameCastInFilm = capitalizeFirstLetter(i.nameInFilm);
+      //   const nameCastOfActor = capitalizeFirstLetter(i.nameOfActor);
+      //   const existing = existingCast.find(
+      //     (castId) => castId.nameInFilm === nameCastInFilm,
+      //   );
+      //   const avatar = await this.firebaseService.upload(files.avatar[count]);
+      //   const idAvatar = avatar.result.url;
 
-        if (existing !== undefined) {
-          await this.firebaseService.deleteFile(existing.avatar);
-          // Update existing cast
-          existing.nameOfActor = nameCastOfActor;
-          existing.avatar = idAvatar;
-          casts.push(existing);
-        } else {
-          // Add new cast
-          const castStore = new this.castModel();
-          castStore.nameInFilm = nameCastInFilm;
-          castStore.nameOfActor = nameCastOfActor;
-          castStore.avatar = idAvatar;
-          castStore.videoId = video._id.toString();
-          video.castId.push(castStore._id.toString());
-          casts.push(castStore);
-        }
-        count++;
-      }
-      console.log(video.castId);
+      //   if (existing !== undefined) {
+      //     await this.firebaseService.deleteFile(existing.avatar);
+      //     // Update existing cast
+      //     existing.nameOfActor = nameCastOfActor;
+      //     existing.avatar = idAvatar;
+      //     casts.push(existing);
+      //   } else {
+      //     // Add new cast
+      //     const castStore = new this.castModel();
+      //     castStore.nameInFilm = nameCastInFilm;
+      //     castStore.nameOfActor = nameCastOfActor;
+      //     castStore.avatar = idAvatar;
+      //     castStore.videoId = video._id.toString();
+      //     video.castId.push(castStore._id.toString());
+      //     casts.push(castStore);
+      //   }
+      //   count++;
+      // }
+      // console.log(video.castId);
       // Delete casts not present in the update request
-      video.castId.forEach(async (existingCast) => {
-        const castExistsInUpdate = casts.some(
-          (updatedCast) =>
-            updatedCast._id.toString() === existingCast.toString(),
-        );
-        if (!castExistsInUpdate) {
-          console.log('existingCast', existingCast);
-          const objectId = new (ObjectId as any)(existingCast);
-          console.log('castExistsInUpdate', castExistsInUpdate);
-          // Delete the cast that is not present in the update request
-          const valueDelete = await this.castModel
-            .findByIdAndDelete(objectId)
-            .exec();
-          this.firebaseService.deleteFile(valueDelete.avatar);
-          video.castId.splice(video.castId.indexOf(existingCast), 1);
-        }
-      });
-      console.log(video.castId);
+      // video.castId.forEach(async (existingCast) => {
+      //   const castExistsInUpdate = casts.some(
+      //     (updatedCast) =>
+      //       updatedCast._id.toString() === existingCast.toString(),
+      //   );
+      //   if (!castExistsInUpdate) {
+      //     console.log('existingCast', existingCast);
+      //     const objectId = new (ObjectId as any)(existingCast);
+      //     console.log('castExistsInUpdate', castExistsInUpdate);
+      //     // Delete the cast that is not present in the update request
+      //     const valueDelete = await this.castModel
+      //       .findByIdAndDelete(objectId)
+      //       .exec();
+      //     this.firebaseService.deleteFile(valueDelete.avatar);
+      //     video.castId.splice(video.castId.indexOf(existingCast), 1);
+      //   }
+      // });
+      // console.log(video.castId);
       const genres: Genre[] = [];
       for (const i of modelRequest.genre) {
         const nameGenre = capitalizeFirstLetter(i.name);
@@ -221,11 +221,12 @@ export class ListModelService {
         video.posterImage,
         files.posterImage[0],
       );
+
       await this.firebaseService.updateFile(video.movieLink, files.movieUrl[0]);
       // Insert data
-      console.log(video.castId);
+      // console.log(video.castId);
       await this.movieModel.updateMany({ _id: id }, video);
-      await this.castModel.create(casts);
+      // await this.castModel.create(casts);
       await this.genreModel.create(genres);
       await this.langugeModel.create(languages);
       jsonResponse.result = video;
@@ -251,24 +252,24 @@ export class ListModelService {
         view: 0,
       });
 
-      const casts: Cast[] = [];
-      let count = 0;
-      for (const i of modelRequest.cast) {
-        const nameCastInFilm = capitalizeFirstLetter(i.nameInFilm);
-        const nameCastOfActor = capitalizeFirstLetter(i.nameOfActor);
-        const avatar = await this.firebaseService.uploadAvatar(
-          files.avatar[count],
-        );
-        const idAvatar = avatar.result.url;
-        const castStore = new this.castModel();
-        castStore.nameInFilm = nameCastInFilm;
-        castStore.nameOfActor = nameCastOfActor;
-        castStore.avatar = idAvatar;
-        castStore.videoId = video._id.toString();
-        casts.push(castStore);
-        video.castId.push(castStore._id.toString());
-        count++;
-      }
+      // const casts: Cast[] = [];
+      // let count = 0;
+      // for (const i of modelRequest.cast) {
+      //   const nameCastInFilm = capitalizeFirstLetter(i.nameInFilm);
+      //   const nameCastOfActor = capitalizeFirstLetter(i.nameOfActor);
+      //   const avatar = await this.firebaseService.uploadAvatar(
+      //     files.avatar[count],
+      //   );
+      //   const idAvatar = avatar.result.url;
+      //   const castStore = new this.castModel();
+      //   castStore.nameInFilm = nameCastInFilm;
+      //   castStore.nameOfActor = nameCastOfActor;
+      //   castStore.avatar = idAvatar;
+      //   castStore.videoId = video._id.toString();
+      //   casts.push(castStore);
+      //   video.castId.push(castStore._id.toString());
+      //   count++;
+      // }
       const genres: Genre[] = [];
       for (const i of modelRequest.genre) {
         const nameGenre = capitalizeFirstLetter(i.name);
@@ -305,7 +306,7 @@ export class ListModelService {
       video.movieLink = await idMovie.result.name;
       // Insert data
       await this.movieModel.create(video);
-      await this.castModel.create(casts);
+      // await this.castModel.create(casts);
       await this.genreModel.create(genres);
       await this.langugeModel.create(languages);
       jsonResponse.result = video;
@@ -367,61 +368,51 @@ export class ListModelService {
   }
 
   private async fetchRatings(videoId: string): Promise<Rating[]> {
-    // Assume that you have a "Rating" model/schema defined in your application
-    // and a corresponding collection in MongoDB
     try {
-      const ratings = await this.ratingModel.find({ VideoId: videoId }).exec();
+      const ratings = await this.ratingModel.find({ videoId: videoId }).exec();
       return ratings;
     } catch (error) {
-      // Handle any errors that might occur during the database query
       throw new Error('Error fetching ratings');
     }
   }
   private async fetchFavorites(videoId: string): Promise<Favorites[]> {
-    // Assume that you have a "Favorites" model/schema defined in your application
-    // and a corresponding collection in MongoDB
     try {
-      const favorites = await this.favoritesModel.find({ _id: videoId }).exec();
+      const favorites = await this.favoritesModel
+        .find({ videoId: videoId })
+        .exec();
       return favorites;
     } catch (error) {
-      // Handle any errors that might occur during the database query
       throw new Error('Error fetching favorites');
     }
   }
 
-  private async fetchCast(cast: string[]): Promise<Cast[]> {
-    // Assume that you have a "Favorites" model/schema defined in your application
-    // and a corresponding collection in MongoDB
-    try {
-      const listcast: Cast[] = [];
-      // Assuming you have a GenreModel or a similar model
-      for (const models of cast) {
-        const casts = await this.castModel.findById({ _id: models }).exec();
-        listcast.push(casts);
-      }
-      return listcast;
+  // private async fetchCast(cast: string[]): Promise<Cast[]> {
+  //   // Assume that you have a "Favorites" model/schema defined in your application
+  //   // and a corresponding collection in MongoDB
+  //   try {
+  //     const listcast: Cast[] = [];
+  //     // Assuming you have a GenreModel or a similar model
+  //     for (const models of cast) {
+  //       const casts = await this.castModel.findById({ _id: models }).exec();
+  //       listcast.push(casts);
+  //     }
+  //     return listcast;
 
-      // Map the genre data to the desired format
-    } catch (error) {
-      // Handle any errors that might occur during the database query
-      throw new Error('Error fetching favorites');
-    }
-  }
+  //     // Map the genre data to the desired format
+  //   } catch (error) {
+  //     // Handle any errors that might occur during the database query
+  //     throw new Error('Error fetching favorites');
+  //   }
+  // }
   private async fetchGenres(genre: string[]): Promise<Genre[]> {
-    // Assume that you have a "Favorites" model/schema defined in your application
-    // and a corresponding collection in MongoDB
     try {
       const listGenre: Genre[] = [];
-      // Assuming you have a GenreModel or a similar model
       for (const models of genre) {
         const genres = await this.genreModel.findById({ _id: models }).exec();
         listGenre.push(genres);
       }
       return listGenre;
-
-      // Map the genre data to the desired format
     } catch (error) {
-      // Handle any errors that might occur during the database query
       throw new Error('Error fetching favorites');
     }
   }

@@ -1,5 +1,5 @@
 import { IsArray, IsDate, IsNumber, IsString } from 'class-validator';
-import { Cast } from 'src/database/schemas/cast.schema';
+// import { Cast } from 'src/database/schemas/cast.schema';
 import { Genre } from 'src/database/schemas/genre.schema';
 import { Language } from 'src/database/schemas/language.schema';
 
@@ -43,8 +43,8 @@ export class DetailMovieDTO {
   @IsDate()
   additionDate: Date;
 
-  @IsArray()
-  cast: Cast[];
+  // @IsArray()
+  // cast: Cast[];
 
   @IsArray()
   genre: Genre[];

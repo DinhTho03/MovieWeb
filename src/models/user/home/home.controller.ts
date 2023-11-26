@@ -8,7 +8,7 @@ export class HomeController {
   constructor(private homeService: HomeService) {}
   @Get()
   @UseGuards(RolesGuard)
-  @Roles('Admin')
+  @Roles('Admin', 'User')
   async getHome(@Request() req) {
     const userId = req.user.id;
     return await this.homeService.GetMovie(userId);

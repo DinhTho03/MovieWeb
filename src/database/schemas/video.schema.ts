@@ -33,8 +33,8 @@ export class Video extends Document {
   @Prop({ required: true })
   additionDate: Date;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Cast' }], required: true })
-  castId: string[];
+  // @Prop({ type: [{ type: Types.ObjectId, ref: 'Cast' }], required: true })
+  // castId: string[];
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Genre' }], required: true })
   genreId: string[];

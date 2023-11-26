@@ -2,24 +2,27 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { MESSAGES_CODE } from 'src/Constant/status.constants';
-import { Cast } from 'src/database/schemas/cast.schema';
+// import { Cast } from 'src/database/schemas/cast.schema';
 import { Genre } from 'src/database/schemas/genre.schema';
 import { Video } from 'src/database/schemas/video.schema';
 import { JsonResponse } from 'src/models/admin/list-model/json-response.model';
 import { VideoPlayDTO } from './dto/videoplay.dto';
 import { WatchHistory } from 'src/database/schemas/watchHistory.schema';
+import { Favorites } from 'src/database/schemas/favorite.schema';
 
 @Injectable()
 export class VideoplayService {
   constructor(
     @InjectModel(Video.name)
     private movieModel: mongoose.Model<Video>,
-    @InjectModel(Cast.name)
-    private castModel: mongoose.Model<Cast>,
+    // @InjectModel(Cast.name)
+    // private castModel: mongoose.Model<Cast>,
     @InjectModel(Genre.name)
     private genreModel: mongoose.Model<Genre>,
     @InjectModel(WatchHistory.name)
     private watchHistoryModel: mongoose.Model<WatchHistory>,
+    @InjectModel(Favorites.name)
+    private favoritesModel: mongoose.Model<Favorites>,
   ) {}
   async getVideoPlay(id: string, userId: any): Promise<any> {
     const jsonResponse = new JsonResponse();
@@ -30,13 +33,15 @@ export class VideoplayService {
       return jsonResponse;
     }
     const videoPlay = await this.movieModel.findOne({ _id: id }).exec();
+    videoPlay.view += 1;
+    await videoPlay.save();
     if (!videoPlay) {
       jsonResponse.success = false;
       jsonResponse.message = MESSAGES_CODE.GET_FAIL;
       jsonResponse.result = 'Video not found';
       return jsonResponse;
     }
-    const cast = await this.fetchCast(videoPlay.castId);
+    // const cast = await this.fetchCast(videoPlay.castId);
     const genre = await this.fetchGenres(videoPlay.genreId);
     const dataVideo: VideoPlayDTO = {
       id: videoPlay._id,
@@ -44,7 +49,7 @@ export class VideoplayService {
       movieLink: videoPlay.movieLink,
       mpaRatings: videoPlay.mpaRatings,
       content: videoPlay.content,
-      cast: cast,
+      // cast: cast,
       genre: genre,
     };
     const watchHistoryFilter = await this.watchHistoryModel
@@ -67,22 +72,60 @@ export class VideoplayService {
     return jsonResponse;
   }
 
-  private async fetchCast(cast: string[]): Promise<Cast[]> {
-    // Assume that you have a "Favorites" model/schema defined in your application
-    // and a corresponding collection in MongoDB
-    try {
-      const listcast: Cast[] = [];
-      // Assuming you have a GenreModel or a similar model
-      for (const models of cast) {
-        const casts = await this.castModel.findById({ _id: models }).exec();
-        listcast.push(casts);
-      }
-      return listcast;
+  // private async fetchCast(cast: string[]): Promise<Cast[]> {
+  //   // Assume that you have a "Favorites" model/schema defined in your application
+  //   // and a corresponding collection in MongoDB
+  //   try {
+  //     const listcast: Cast[] = [];
+  //     // Assuming you have a GenreModel or a similar model
+  //     for (const models of cast) {
+  //       const casts = await this.castModel.findById({ _id: models }).exec();
+  //       listcast.push(casts);
+  //     }
+  //     return listcast;
 
-      // Map the genre data to the desired format
+  //     // Map the genre data to the desired format
+  //   } catch (error) {
+  //     // Handle any errors that might occur during the database query
+  //     throw new Error('Error fetching favorites');
+  //   }
+  // }
+
+  async likeVideoPlay(
+    videoId: string,
+    userId: string,
+    like: boolean,
+  ): Promise<any> {
+    console.log(like);
+
+    try {
+      if (like) {
+        // Nếu người dùng thích video
+        const videoPlay = new this.favoritesModel({
+          videoId: videoId,
+          userId: userId,
+          additionDate: new Date(),
+        });
+        console.log(1);
+        await videoPlay.save();
+        return videoPlay;
+      } else {
+        // Nếu người dùng không thích video nữa
+        console.log(2);
+        const videoPlay = await this.favoritesModel
+          .findOneAndDelete({ videoId: videoId, userId: userId })
+          .exec();
+
+        if (videoPlay) {
+          return videoPlay;
+        } else {
+          console.log('Video not found in favorites.');
+          return null;
+        }
+      }
     } catch (error) {
-      // Handle any errors that might occur during the database query
-      throw new Error('Error fetching favorites');
+      console.error('Error in likeVideoPlay:', error.message);
+      throw error;
     }
   }
   private async fetchGenres(genre: string[]): Promise<Genre[]> {

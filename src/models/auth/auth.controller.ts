@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterRes } from './dto/registerRes.dto';
-import { TestAPI } from './dto/test';
 import { LoginRes } from './dto/loginRes.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from './guards/roles.guard';

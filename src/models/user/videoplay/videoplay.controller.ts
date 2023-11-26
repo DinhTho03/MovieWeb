@@ -13,4 +13,16 @@ export class VideoplayController {
     const userId = req.user.id;
     return await this.videoplayService.getVideoPlay(id, userId);
   }
+
+  @Get('/like')
+  @UseGuards(RolesGuard)
+  @Roles('User', 'Admin')
+  async likeVideoPlay(
+    @Query('videoId') videoId: string,
+    @Query('like') like: boolean,
+    @Request() req,
+  ) {
+    const userId = req.user.id;
+    return await this.videoplayService.likeVideoPlay(videoId, userId, like);
+  }
 }

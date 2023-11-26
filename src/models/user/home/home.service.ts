@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
-import { Cast } from 'src/database/schemas/cast.schema';
+// import { Cast } from 'src/database/schemas/cast.schema';
 import { Genre } from 'src/database/schemas/genre.schema';
 import { Rating } from 'src/database/schemas/rating.schema';
 import { Video } from 'src/database/schemas/video.schema';
@@ -15,8 +15,8 @@ export class HomeService {
   constructor(
     @InjectModel(Video.name)
     private movieModel: mongoose.Model<Video>,
-    @InjectModel(Cast.name)
-    private castModel: mongoose.Model<Cast>,
+    // @InjectModel(Cast.name)
+    // private castModel: mongoose.Model<Cast>,
     @InjectModel(Genre.name)
     private genreModel: mongoose.Model<Genre>,
     @InjectModel(Rating.name)
@@ -79,7 +79,7 @@ export class HomeService {
       .exec();
 
     for (const item of getMovieTrailers) {
-      const genre = await this.fetchGenres(item._id);
+      const genre = await this.fetchGenres(item.genreId);
       getHomeDTO.getMovieHomeDTO.push({
         id: item._id,
         title: item.title,
@@ -107,7 +107,7 @@ export class HomeService {
       // Map the genre data to the desired format
     } catch (error) {
       // Handle any errors that might occur during the database query
-      throw new Error('Error fetching favorites');
+      throw new Error('Error fetching Genres');
     }
   }
 }

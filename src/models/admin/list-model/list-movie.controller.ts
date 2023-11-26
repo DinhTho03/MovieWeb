@@ -22,8 +22,6 @@ import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   FilesInterceptor,
 } from '@nestjs/platform-express';
-import { TestAPI } from './dto/genre.Dto';
-import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/models/auth/decorator/roles.decorator';
 import { RolesGuard } from 'src/models/auth/guards/roles.guard';
 // import { JwtAuthGuard } from 'src/models/auth/strategies/auth.guard';
@@ -44,9 +42,20 @@ export class ListModelController {
   @Roles('Admin')
   async findAll(
     @Query('searchQuery') searchQuery: string,
+    @Query('additionDate') additionDate: boolean | undefined,
+    @Query('sortbyView') sortbyView: boolean | undefined,
+    @Query('sortByLike') sortByLike: boolean | undefined,
+    @Query('sortByRating') sortByRating: boolean | undefined,
     @Query('pageNumber') pageNumber: number = 1,
   ) {
-    return await this.listModelService.FindAll(searchQuery, pageNumber);
+    return await this.listModelService.FindAll(
+      searchQuery,
+      additionDate,
+      sortbyView,
+      sortByLike,
+      sortByRating,
+      pageNumber,
+    );
   }
 
   // Delete a movie

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Cast, CastSchema } from 'src/database/schemas/cast.schema';
+// import { Cast, CastSchema } from 'src/database/schemas/cast.schema';
 import { Genre, GenreSchema } from 'src/database/schemas/genre.schema';
 import { Video, VideoSchema } from 'src/database/schemas/video.schema';
 import { VideoplayController } from './videoplay.controller';
@@ -11,6 +11,10 @@ import {
   WatchHistory,
   WatchHistorySchema,
 } from 'src/database/schemas/watchHistory.schema';
+import {
+  Favorites,
+  FavoritesSchema,
+} from 'src/database/schemas/favorite.schema';
 
 @Module({
   imports: [
@@ -24,9 +28,10 @@ import {
     }),
     MongooseModule.forFeature([
       { name: Video.name, schema: VideoSchema },
-      { name: Cast.name, schema: CastSchema },
+      // { name: Cast.name, schema: CastSchema },
       { name: Genre.name, schema: GenreSchema },
       { name: WatchHistory.name, schema: WatchHistorySchema },
+      { name: Favorites.name, schema: FavoritesSchema },
     ]),
   ],
   controllers: [VideoplayController],

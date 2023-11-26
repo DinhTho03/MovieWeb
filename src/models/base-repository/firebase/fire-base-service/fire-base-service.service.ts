@@ -8,15 +8,14 @@ import * as os from 'os';
 import * as path from 'path';
 import { Video } from 'src/database/schemas/video.schema';
 import mongoose from 'mongoose';
-import { Cast } from 'src/database/schemas/cast.schema';
+// import { Cast } from 'src/database/schemas/cast.schema';
 import { InjectModel } from '@nestjs/mongoose';
 @Injectable()
 export class FireBaseService {
   constructor(
     @InjectModel(Video.name)
-    private movieModel: mongoose.Model<Video>,
-    @InjectModel(Cast.name)
-    private castModel: mongoose.Model<Cast>,
+    private movieModel: mongoose.Model<Video>, // @InjectModel(Cast.name)
+    // private castModel: mongoose.Model<Cast>,
   ) {}
   async upload(file: Express.Multer.File): Promise<any> {
     const tempLocalFile = path.join(os.tmpdir(), file.originalname);
@@ -26,7 +25,6 @@ export class FireBaseService {
       if (!file || !file.originalname || !file.buffer) {
         throw new HttpException('Invalid file data', 200);
       }
-
       const dateTime = new Date();
       const unixTimestamp = Math.floor(dateTime.getTime() / 1000);
       const fileParts = file.originalname.split('.');
@@ -129,64 +127,64 @@ export class FireBaseService {
     }
   }
 
-  async uploadAvatar(file: Express.Multer.File): Promise<any> {
-    const tempLocalFile = path.join(os.tmpdir(), file.originalname);
+  // async uploadAvatar(file: Express.Multer.File): Promise<any> {
+  //   const tempLocalFile = path.join(os.tmpdir(), file.originalname);
 
-    try {
-      // Validate file image
-      if (!file || !file.originalname || !file.buffer) {
-        throw new HttpException('Invalid file data', 200);
-      }
+  //   try {
+  //     // Validate file image
+  //     if (!file || !file.originalname || !file.buffer) {
+  //       throw new HttpException('Invalid file data', 200);
+  //     }
 
-      const dateTime = new Date();
-      const unixTimestamp = Math.floor(dateTime.getTime() / 1000);
-      const fileParts = file.originalname.split('.');
-      const extension = '.' + fileParts[fileParts.length - 1];
-      let fileName = '';
-      if (file?.size > 5 * 1024 * 1024) {
-        throw new HttpException('file size > 5MB', 200);
-      } else if (!file?.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
-        throw new HttpException('file not match type (jpg/jpeg/png/gif)', 200);
-      } else {
-        fileName = `avatar/${unixTimestamp}` + extension;
-      }
+  //     const dateTime = new Date();
+  //     const unixTimestamp = Math.floor(dateTime.getTime() / 1000);
+  //     const fileParts = file.originalname.split('.');
+  //     const extension = '.' + fileParts[fileParts.length - 1];
+  //     let fileName = '';
+  //     if (file?.size > 5 * 1024 * 1024) {
+  //       throw new HttpException('file size > 5MB', 200);
+  //     } else if (!file?.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+  //       throw new HttpException('file not match type (jpg/jpeg/png/gif)', 200);
+  //     } else {
+  //       fileName = `avatar/${unixTimestamp}` + extension;
+  //     }
 
-      // Write buffer to local file
-      fs.writeFileSync(tempLocalFile, file.buffer);
+  //     // Write buffer to local file
+  //     fs.writeFileSync(tempLocalFile, file.buffer);
 
-      const bucket = admin.storage().bucket();
-      const res = await bucket.upload(tempLocalFile, {
-        destination: fileName,
-        metadata: {
-          cacheControl: 'public, max-age=31536000',
-          contentType: file.mimetype,
-        },
-      });
+  //     const bucket = admin.storage().bucket();
+  //     const res = await bucket.upload(tempLocalFile, {
+  //       destination: fileName,
+  //       metadata: {
+  //         cacheControl: 'public, max-age=31536000',
+  //         contentType: file.mimetype,
+  //       },
+  //     });
 
-      // Remove local file
-      fs.unlinkSync(tempLocalFile);
+  //     // Remove local file
+  //     fs.unlinkSync(tempLocalFile);
 
-      const response = res[0];
-      if (response) {
-        const jsonResponse = new JsonResponse<ImageModel>(true);
-        jsonResponse.result = {
-          name: response.id,
-          url: `https://firebasestorage.googleapis.com/v0/b/${response.metadata.bucket}/o/${response.id}?alt=media`,
-        } as ImageModel;
-        jsonResponse.message = MESSAGES_CODE.UPLOAD_SUCCESS;
-        return jsonResponse;
-      }
-    } catch (error) {
-      // Remove local file in case of error
-      if (fs.existsSync(tempLocalFile)) {
-        fs.unlinkSync(tempLocalFile);
-      }
+  //     const response = res[0];
+  //     if (response) {
+  //       const jsonResponse = new JsonResponse<ImageModel>(true);
+  //       jsonResponse.result = {
+  //         name: response.id,
+  //         url: `https://firebasestorage.googleapis.com/v0/b/${response.metadata.bucket}/o/${response.id}?alt=media`,
+  //       } as ImageModel;
+  //       jsonResponse.message = MESSAGES_CODE.UPLOAD_SUCCESS;
+  //       return jsonResponse;
+  //     }
+  //   } catch (error) {
+  //     // Remove local file in case of error
+  //     if (fs.existsSync(tempLocalFile)) {
+  //       fs.unlinkSync(tempLocalFile);
+  //     }
 
-      throw new HttpException(error.toString(), 200);
-    }
+  //     throw new HttpException(error.toString(), 200);
+  //   }
 
-    throw new HttpException('Invalid file', 200);
-  }
+  //   throw new HttpException('Invalid file', 200);
+  // }
 
   async downloadFile(videoName: string, res): Promise<any> {
     try {
@@ -285,6 +283,7 @@ export class FireBaseService {
       const filenameSeparated = filenameAfterQuery.split('2F')[1];
       const file = bucket.file(`${folderName}/${filenameSeparated}`);
       const [exists] = await file.exists();
+      console.log('exists', exists);
       if (exists) {
         // Update file in Firebase Storage
         const res = await file
@@ -292,9 +291,6 @@ export class FireBaseService {
             metadata: {
               cacheControl: 'public, max-age=31536000',
               contentType: newFile.mimetype,
-              metadata: {
-                firebaseStorageDownloadTokens: '',
-              },
             },
           })
           .on('error', (error) => {
