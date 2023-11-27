@@ -15,6 +15,7 @@ import {
   Favorites,
   FavoritesSchema,
 } from 'src/database/schemas/favorite.schema';
+import { Rating, RatingSchema } from 'src/database/schemas/rating.schema';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import {
       { name: Genre.name, schema: GenreSchema },
       { name: WatchHistory.name, schema: WatchHistorySchema },
       { name: Favorites.name, schema: FavoritesSchema },
+      { name: Rating.name, schema: RatingSchema },
     ]),
   ],
   controllers: [VideoplayController],

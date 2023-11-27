@@ -1,4 +1,11 @@
-import { Controller, Get, Query, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  UseGuards,
+  Request,
+  Post,
+} from '@nestjs/common';
 import { VideoplayService } from './videoplay.service';
 import { Roles } from 'src/models/auth/decorator/roles.decorator';
 import { RolesGuard } from 'src/models/auth/guards/roles.guard';
@@ -24,5 +31,17 @@ export class VideoplayController {
   ) {
     const userId = req.user.id;
     return await this.videoplayService.likeVideoPlay(videoId, userId, like);
+  }
+
+  @Post('/rating')
+  @UseGuards(RolesGuard)
+  @Roles('User', 'Admin')
+  async ratingVideoPlay(
+    @Query('videoId') videoId: string,
+    @Query('rate') rate: number,
+    @Request() req,
+  ) {
+    const userId = req.user.id;
+    return await this.videoplayService.ratingVideoPlay(videoId, userId, rate);
   }
 }

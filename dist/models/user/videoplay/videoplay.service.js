@@ -22,12 +22,14 @@ const video_schema_1 = require("../../../database/schemas/video.schema");
 const json_response_model_1 = require("../../admin/list-model/json-response.model");
 const watchHistory_schema_1 = require("../../../database/schemas/watchHistory.schema");
 const favorite_schema_1 = require("../../../database/schemas/favorite.schema");
+const rating_schema_1 = require("../../../database/schemas/rating.schema");
 let VideoplayService = class VideoplayService {
-    constructor(movieModel, genreModel, watchHistoryModel, favoritesModel) {
+    constructor(movieModel, genreModel, watchHistoryModel, favoritesModel, ratingModel) {
         this.movieModel = movieModel;
         this.genreModel = genreModel;
         this.watchHistoryModel = watchHistoryModel;
         this.favoritesModel = favoritesModel;
+        this.ratingModel = ratingModel;
     }
     async getVideoPlay(id, userId) {
         const jsonResponse = new json_response_model_1.JsonResponse();
@@ -106,6 +108,31 @@ let VideoplayService = class VideoplayService {
             throw error;
         }
     }
+    async ratingVideoPlay(videoId, userId, rate) {
+        try {
+            const existRating = await this.ratingModel
+                .findOne({ videoId: videoId, userId: userId })
+                .exec();
+            if (!existRating) {
+                const rating = new this.ratingModel({
+                    videoId: videoId,
+                    userId: userId,
+                    value: rate,
+                });
+                await rating.save();
+                return rating;
+            }
+            else {
+                existRating.value = rate;
+                await existRating.save();
+                return existRating;
+            }
+        }
+        catch (error) {
+            console.error('Error in likeVideoPlay:', error.message);
+            throw error;
+        }
+    }
     async fetchGenres(genre) {
         try {
             const listGenre = [];
@@ -127,6 +154,7 @@ exports.VideoplayService = VideoplayService = __decorate([
     __param(1, (0, mongoose_1.InjectModel)(genre_schema_1.Genre.name)),
     __param(2, (0, mongoose_1.InjectModel)(watchHistory_schema_1.WatchHistory.name)),
     __param(3, (0, mongoose_1.InjectModel)(favorite_schema_1.Favorites.name)),
-    __metadata("design:paramtypes", [mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model])
+    __param(4, (0, mongoose_1.InjectModel)(rating_schema_1.Rating.name)),
+    __metadata("design:paramtypes", [mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model])
 ], VideoplayService);
 //# sourceMappingURL=videoplay.service.js.map

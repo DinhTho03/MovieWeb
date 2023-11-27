@@ -29,6 +29,10 @@ let VideoplayController = class VideoplayController {
         const userId = req.user.id;
         return await this.videoplayService.likeVideoPlay(videoId, userId, like);
     }
+    async ratingVideoPlay(videoId, rate, req) {
+        const userId = req.user.id;
+        return await this.videoplayService.ratingVideoPlay(videoId, userId, rate);
+    }
 };
 exports.VideoplayController = VideoplayController;
 __decorate([
@@ -52,6 +56,17 @@ __decorate([
     __metadata("design:paramtypes", [String, Boolean, Object]),
     __metadata("design:returntype", Promise)
 ], VideoplayController.prototype, "likeVideoPlay", null);
+__decorate([
+    (0, common_1.Post)('/rating'),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('User', 'Admin'),
+    __param(0, (0, common_1.Query)('videoId')),
+    __param(1, (0, common_1.Query)('rate')),
+    __param(2, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Number, Object]),
+    __metadata("design:returntype", Promise)
+], VideoplayController.prototype, "ratingVideoPlay", null);
 exports.VideoplayController = VideoplayController = __decorate([
     (0, common_1.Controller)('videoplay'),
     __metadata("design:paramtypes", [videoplay_service_1.VideoplayService])
