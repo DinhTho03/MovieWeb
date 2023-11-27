@@ -15,7 +15,7 @@ RUN npm ci --only=production && npm cache clean --force
 # Stage 2: Run the application
 FROM node:18-alpine
 WORKDIR /app
-
+COPY ./.env ./.env
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/node_modules ./node_modules
 
