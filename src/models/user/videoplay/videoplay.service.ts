@@ -9,6 +9,7 @@ import { JsonResponse } from 'src/models/admin/list-model/json-response.model';
 import { VideoPlayDTO } from './dto/videoplay.dto';
 import { WatchHistory } from 'src/database/schemas/watchHistory.schema';
 import { Favorites } from 'src/database/schemas/favorite.schema';
+import { Rating } from 'src/database/schemas/rating.schema';
 
 @Injectable()
 export class VideoplayService {
@@ -23,6 +24,8 @@ export class VideoplayService {
     private watchHistoryModel: mongoose.Model<WatchHistory>,
     @InjectModel(Favorites.name)
     private favoritesModel: mongoose.Model<Favorites>,
+    @InjectModel(Rating.name)
+    private ratingModel: mongoose.Model<Rating>,
   ) {}
   async getVideoPlay(id: string, userId: any): Promise<any> {
     const jsonResponse = new JsonResponse();
@@ -128,6 +131,36 @@ export class VideoplayService {
       throw error;
     }
   }
+
+  async ratingVideoPlay(
+    videoId: string,
+    userId: string,
+    rate: number,
+  ): Promise<any> {
+    try {
+      // Nếu người dùng thích video
+      const existRating = await this.ratingModel
+        .findOne({ videoId: videoId, userId: userId })
+        .exec();
+      if (!existRating) {
+        const rating = new this.ratingModel({
+          videoId: videoId,
+          userId: userId,
+          value: rate,
+        });
+        await rating.save();
+        return rating;
+      } else {
+        existRating.value = rate;
+        await existRating.save();
+        return existRating;
+      }
+    } catch (error) {
+      console.error('Error in likeVideoPlay:', error.message);
+      throw error;
+    }
+  }
+
   private async fetchGenres(genre: string[]): Promise<Genre[]> {
     // Assume that you have a "Favorites" model/schema defined in your application
     // and a corresponding collection in MongoDB

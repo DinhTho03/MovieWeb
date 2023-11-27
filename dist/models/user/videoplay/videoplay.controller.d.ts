@@ -4,4 +4,5 @@ export declare class VideoplayController {
     constructor(videoplayService: VideoplayService);
     findVideoPlay(id: string, req: any): Promise<any>;
     likeVideoPlay(videoId: string, like: boolean, req: any): Promise<any>;
+    ratingVideoPlay(videoId: string, rate: number, req: any): Promise<any>;
 }
