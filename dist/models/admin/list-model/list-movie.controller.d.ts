@@ -11,4 +11,5 @@ export declare class ListModelController {
     deleteListMovie(ids: string[]): Promise<any>;
     addMovie(modelRequest: MovieRes, files: any): Promise<any>;
     updateMovie(id: string, modelRequest: MovieRes, files: any): Promise<any>;
+    addCast(files: any): Promise<boolean>;
 }

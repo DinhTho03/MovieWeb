@@ -37,11 +37,14 @@ let ListModelController = ListModelController_1 = class ListModelController {
         return deleteMovie;
     }
     async deleteListMovie(ids) {
+        console.log(ids);
         const objectIdList = ids.map((id) => new mongodb_1.ObjectId(id));
         const deleteListMovie = await this.listModelService.deleteListMovie(objectIdList);
         return deleteListMovie;
     }
     async addMovie(modelRequest, files) {
+        console.log(modelRequest);
+        console.log(files.posterImage[0]);
         const addMovie = await this.listModelService.addMovie(modelRequest, files);
         return addMovie;
     }
@@ -49,6 +52,10 @@ let ListModelController = ListModelController_1 = class ListModelController {
         const objectId = new mongodb_1.ObjectId(id);
         const addMovie = await this.listModelService.updateAMovie(objectId, modelRequest, files);
         return addMovie;
+    }
+    async addCast(files) {
+        console.log(files);
+        return true;
     }
 };
 exports.ListModelController = ListModelController;
@@ -91,7 +98,6 @@ __decorate([
     (0, common_1.UseInterceptors)((0, platform_express_1.FileFieldsInterceptor)([
         { name: 'posterImage', maxCount: 1 },
         { name: 'movieUrl', maxCount: 1 },
-        { name: 'avatar', maxCount: 10 },
     ])),
     (0, common_1.HttpCode)(200),
     __param(0, (0, common_1.Body)()),
@@ -117,6 +123,16 @@ __decorate([
     __metadata("design:paramtypes", [String, Movie_model_1.MovieRes, Object]),
     __metadata("design:returntype", Promise)
 ], ListModelController.prototype, "updateMovie", null);
+__decorate([
+    (0, common_1.Post)('/upload'),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('Admin'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileFieldsInterceptor)([{ name: 'movieUrl', maxCount: 1 }])),
+    __param(0, (0, common_1.UploadedFiles)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ListModelController.prototype, "addCast", null);
 exports.ListModelController = ListModelController = ListModelController_1 = __decorate([
     (0, common_1.Controller)('list-model'),
     __metadata("design:paramtypes", [list_movie_service_1.ListModelService,

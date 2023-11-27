@@ -16,8 +16,6 @@ export class MovieRes {
   @IsString()
   country: string;
   @IsArray()
-  cast: CastRes[];
-  @IsArray()
   genre: Genre[];
   @IsArray()
   language: Language[];

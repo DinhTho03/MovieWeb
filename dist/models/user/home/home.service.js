@@ -49,6 +49,7 @@ let HomeService = class HomeService {
             },
         ]);
         for (const item of rating) {
+            console.log(item);
             const video = await this.movieModel.findOne({ _id: item._id }).exec();
             const genre = await this.fetchGenres(video.genreId);
             getHomeDTO.ratingDTOHome.push({
@@ -60,6 +61,7 @@ let HomeService = class HomeService {
                 mpaRatings: item.mpaRatings,
             });
         }
+        console.log(123);
         getHomeDTO.watchingHistoryHome = [];
         const watchingHistory = await this.watchHistoryModel
             .find({ userId: userId })
@@ -68,6 +70,7 @@ let HomeService = class HomeService {
             .exec();
         for (const item of watchingHistory) {
             const video = await this.movieModel.findOne({ _id: item.videoId }).exec();
+            console.log(video);
             const genre = await this.fetchGenres(video.genreId);
             getHomeDTO.watchingHistoryHome.push({
                 id: item._id,
@@ -83,11 +86,10 @@ let HomeService = class HomeService {
             .limit(3)
             .exec();
         for (const item of getMovieTrailers) {
-            const genre = await this.fetchGenres(item.genreId);
             getHomeDTO.getMovieHomeDTO.push({
                 id: item._id,
                 title: item.title,
-                genre: genre,
+                content: item.content,
                 movieUrl: item.movieLink,
             });
         }

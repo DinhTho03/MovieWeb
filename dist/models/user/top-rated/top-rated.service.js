@@ -28,16 +28,18 @@ let TopRatedService = class TopRatedService {
         this.genreModel = genreModel;
         this.ratingModel = ratingModel;
     }
-    async getTopRated() {
+    async getTopRated(searchQuery) {
         const jsonResponse = new json_response_model_1.JsonResponse(true);
         const getTopRatingDTO = new top_rating_dto_1.GetTopRatingDTO();
-        const movie = await this.movieModel
-            .find()
+        const movieQuery = searchQuery
+            ? { title: { $regex: new RegExp(searchQuery, 'i') } }
+            : {};
+        const topMovies = await this.movieModel
+            .find(movieQuery)
             .sort({ additionDate: -1 })
             .limit(8)
             .exec();
-        getTopRatingDTO.getMovieHomeDTO = [];
-        for (const item of movie) {
+        getTopRatingDTO.getMovieHomeDTO = await Promise.all(topMovies.map(async (item) => {
             const genre = await this.fetchGenres(item.genreId);
             const ratings = await this.ratingModel
                 .aggregate([
@@ -46,15 +48,16 @@ let TopRatedService = class TopRatedService {
             ])
                 .exec();
             const averageRating = ratings.length > 0 ? ratings[0].averageRating : 0;
-            getTopRatingDTO.getMovieHomeDTO.push({
+            return {
                 id: item._id,
                 title: item.title,
                 genre: genre,
                 posterImage: item.posterImage,
                 averageRating: averageRating,
-            });
-        }
-        const rating = await this.ratingModel.aggregate([
+            };
+        }));
+        const topRatedMovies = await this.ratingModel
+            .aggregate([
             {
                 $group: {
                     _id: '$videoId',
@@ -67,20 +70,20 @@ let TopRatedService = class TopRatedService {
             {
                 $limit: 6,
             },
-        ]);
-        getTopRatingDTO.ratingDTOHome = [];
-        for (const item of rating) {
+        ])
+            .exec();
+        getTopRatingDTO.ratingDTOHome = await Promise.all(topRatedMovies.map(async (item) => {
             const video = await this.movieModel.findOne({ _id: item._id }).exec();
             const genre = await this.fetchGenres(video.genreId);
-            getTopRatingDTO.ratingDTOHome.push({
+            return {
                 id: item._id,
                 genre: genre,
                 title: video.title,
                 posterImage: video.posterImage,
                 averageRating: item.averageRating,
                 mpaRatings: video.mpaRatings,
-            });
-        }
+            };
+        }));
         jsonResponse.result = getTopRatingDTO;
         jsonResponse.message = status_constants_1.MESSAGES_CODE.GET_SUCCESS;
         return jsonResponse;

@@ -9,7 +9,7 @@ export class GetHomeDTO {
 export class GetMovieHomeDTO {
   id: string;
   title: string;
-  genre: Genre[];
+  content: string;
   movieUrl: string;
 }
 

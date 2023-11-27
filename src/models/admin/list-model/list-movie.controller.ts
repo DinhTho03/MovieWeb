@@ -75,6 +75,7 @@ export class ListModelController {
   @Roles('Admin')
   async deleteListMovie(@Body('ids') ids: string[]) {
     // Convert string to ObjectId
+    console.log(ids);
     const objectIdList = ids.map((id) => new (ObjectId as any)(id));
     const deleteListMovie =
       await this.listModelService.deleteListMovie(objectIdList);
@@ -89,11 +90,12 @@ export class ListModelController {
     FileFieldsInterceptor([
       { name: 'posterImage', maxCount: 1 },
       { name: 'movieUrl', maxCount: 1 },
-      { name: 'avatar', maxCount: 10 },
     ]),
   )
   @HttpCode(200)
   async addMovie(@Body() modelRequest: MovieRes, @UploadedFiles() files) {
+    console.log(modelRequest);
+    console.log(files.posterImage[0]);
     const addMovie = await this.listModelService.addMovie(modelRequest, files);
 
     return addMovie;
@@ -125,13 +127,14 @@ export class ListModelController {
     );
     return addMovie;
   }
-  // @Post('/upload')
-  // @UseGuards(RolesGuard)
-  // @Roles('Admin')
-  // @UseInterceptors(FileFieldsInterceptor([{ name: 'movieUrl', maxCount: 1 }]))
-  // async addCast(@Body() model: TestAPI, @UploadedFiles() files) {
-  //   return true;
-  // }
+  @Post('/upload')
+  @UseGuards(RolesGuard)
+  @Roles('Admin')
+  @UseInterceptors(FileFieldsInterceptor([{ name: 'movieUrl', maxCount: 1 }]))
+  async addCast(@UploadedFiles() files) {
+    console.log(files);
+    return true;
+  }
 
   // @HttpCode(200)
   // @Post('/uploadFile')

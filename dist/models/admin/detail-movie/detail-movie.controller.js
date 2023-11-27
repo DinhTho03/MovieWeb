@@ -64,7 +64,6 @@ __decorate([
     (0, common_1.UseInterceptors)((0, platform_express_1.FileFieldsInterceptor)([
         { name: 'posterImage', maxCount: 1 },
         { name: 'movieUrl', maxCount: 1 },
-        { name: 'avatar', maxCount: 10 },
     ])),
     (0, common_1.HttpCode)(200),
     __param(0, (0, common_1.Body)()),
