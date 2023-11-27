@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { TopRatedService } from './top-rated.service';
 import { RolesGuard } from 'src/models/auth/guards/roles.guard';
 import { Roles } from 'src/models/auth/decorator/roles.decorator';
@@ -10,7 +10,9 @@ export class TopRatedController {
   @Get()
   @UseGuards(RolesGuard)
   @Roles('Admin', 'User')
-  async getTopRated(): Promise<any> {
-    return await this.topRatedService.getTopRated();
+  async getTopRated(
+    @Query('searchQuery') searchQuery: string | undefined,
+  ): Promise<any> {
+    return await this.topRatedService.getTopRated(searchQuery);
   }
 }

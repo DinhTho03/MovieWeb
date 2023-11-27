@@ -42,9 +42,12 @@ export class HomeService {
         $limit: 3,
       },
     ]);
+
     for (const item of rating) {
+      console.log(item);
       const video = await this.movieModel.findOne({ _id: item._id }).exec();
       const genre = await this.fetchGenres(video.genreId);
+
       getHomeDTO.ratingDTOHome.push({
         id: item._id,
         genre: genre,
@@ -54,8 +57,8 @@ export class HomeService {
         mpaRatings: item.mpaRatings,
       });
     }
+    console.log(123);
     getHomeDTO.watchingHistoryHome = [];
-
     const watchingHistory = await this.watchHistoryModel
       .find({ userId: userId })
       .sort({ watchAt: -1 })
@@ -63,6 +66,7 @@ export class HomeService {
       .exec();
     for (const item of watchingHistory) {
       const video = await this.movieModel.findOne({ _id: item.videoId }).exec();
+      console.log(video);
       const genre = await this.fetchGenres(video.genreId);
       getHomeDTO.watchingHistoryHome.push({
         id: item._id,
@@ -79,11 +83,10 @@ export class HomeService {
       .exec();
 
     for (const item of getMovieTrailers) {
-      const genre = await this.fetchGenres(item.genreId);
       getHomeDTO.getMovieHomeDTO.push({
         id: item._id,
         title: item.title,
-        genre: genre,
+        content: item.content,
         movieUrl: item.movieLink,
       });
     }
@@ -92,21 +95,17 @@ export class HomeService {
     jsonResponse.result = getHomeDTO;
     return jsonResponse;
   }
+
+  // fetch Genres
   private async fetchGenres(genre: string[]): Promise<Genre[]> {
-    // Assume that you have a "Favorites" model/schema defined in your application
-    // and a corresponding collection in MongoDB
     try {
       const listGenre: Genre[] = [];
-      // Assuming you have a GenreModel or a similar model
       for (const models of genre) {
         const genres = await this.genreModel.findById({ _id: models }).exec();
         listGenre.push(genres);
       }
       return listGenre;
-
-      // Map the genre data to the desired format
     } catch (error) {
-      // Handle any errors that might occur during the database query
       throw new Error('Error fetching Genres');
     }
   }

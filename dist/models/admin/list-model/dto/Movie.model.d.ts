@@ -7,7 +7,6 @@ export declare class MovieRes {
     mpaRatings: string;
     releaseYear: Date;
     country: string;
-    cast: CastRes[];
     genre: Genre[];
     language: Language[];
 }

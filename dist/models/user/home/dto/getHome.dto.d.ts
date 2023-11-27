@@ -7,7 +7,7 @@ export declare class GetHomeDTO {
 export declare class GetMovieHomeDTO {
     id: string;
     title: string;
-    genre: Genre[];
+    content: string;
     movieUrl: string;
 }
 export declare class WatchHistoryDTO {

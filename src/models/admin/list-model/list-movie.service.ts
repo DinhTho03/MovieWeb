@@ -340,11 +340,12 @@ export class ListModelService {
       await this.firebaseService.deleteFile(deleteMovie.posterImage);
       await this.firebaseService.deleteFile(deleteMovie.movieLink);
       const videoId = deleteMovie._id.toString();
-      const cast = await this.castModel.find({ videoId: videoId }).exec();
-      if (cast.length > 0) {
-        for (const i of cast) {
-          await this.castModel.findByIdAndDelete(i._id).exec();
-          await this.firebaseService.deleteFile(i.avatar);
+      const deleteRating = await this.ratingModel
+        .find({ videoId: videoId })
+        .exec();
+      if (deleteRating.length > 0) {
+        for (const i of deleteRating) {
+          await this.ratingModel.findByIdAndDelete(i._id).exec();
         }
       }
     }

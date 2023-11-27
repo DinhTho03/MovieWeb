@@ -43,7 +43,6 @@ export class DetailMovieController {
     FileFieldsInterceptor([
       { name: 'posterImage', maxCount: 1 },
       { name: 'movieUrl', maxCount: 1 },
-      { name: 'avatar', maxCount: 10 },
     ]),
   )
   @HttpCode(200)

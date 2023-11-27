@@ -9,6 +9,6 @@ export declare class TopRatedService {
     private genreModel;
     private ratingModel;
     constructor(movieModel: mongoose.Model<Video>, genreModel: mongoose.Model<Genre>, ratingModel: mongoose.Model<Rating>);
-    getTopRated(): Promise<JsonResponse<GetTopRatingDTO>>;
+    getTopRated(searchQuery: string | undefined): Promise<JsonResponse<GetTopRatingDTO>>;
     private fetchGenres;
 }
