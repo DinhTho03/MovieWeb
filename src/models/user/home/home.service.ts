@@ -42,7 +42,7 @@ export class HomeService {
         $limit: 3,
       },
     ]);
-
+    console.log(rating);
     for (const item of rating) {
       console.log(item);
       const video = await this.movieModel.findOne({ _id: item._id }).exec();

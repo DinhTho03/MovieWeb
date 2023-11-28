@@ -55,7 +55,7 @@ let ListModelController = ListModelController_1 = class ListModelController {
     }
     async addCast(files) {
         console.log(files);
-        return true;
+        return files;
     }
 };
 exports.ListModelController = ListModelController;
@@ -125,8 +125,6 @@ __decorate([
 ], ListModelController.prototype, "updateMovie", null);
 __decorate([
     (0, common_1.Post)('/upload'),
-    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)('Admin'),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileFieldsInterceptor)([{ name: 'movieUrl', maxCount: 1 }])),
     __param(0, (0, common_1.UploadedFiles)()),
     __metadata("design:type", Function),

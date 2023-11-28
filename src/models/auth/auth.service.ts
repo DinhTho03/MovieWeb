@@ -45,6 +45,13 @@ export class AuthService implements IAuthService {
       jsonResponse.result = null;
       return jsonResponse;
     }
+    const existingUser = await this.userModel
+      .findOne({ email: registerRes.email })
+      .exec();
+    if (existingUser) {
+      jsonResponse.success = false;
+      jsonResponse.message = 'User already exists';
+    }
     const user = new this.userModel();
     user._id = new mongoose.Types.ObjectId();
     user.email = registerRes.email.toString();

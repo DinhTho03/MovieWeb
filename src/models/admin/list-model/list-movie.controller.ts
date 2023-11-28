@@ -128,12 +128,10 @@ export class ListModelController {
     return addMovie;
   }
   @Post('/upload')
-  @UseGuards(RolesGuard)
-  @Roles('Admin')
   @UseInterceptors(FileFieldsInterceptor([{ name: 'movieUrl', maxCount: 1 }]))
   async addCast(@UploadedFiles() files) {
     console.log(files);
-    return true;
+    return files;
   }
 
   // @HttpCode(200)
