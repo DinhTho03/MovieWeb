@@ -14,6 +14,10 @@ import { Language, LanguageSchema } from 'src/database/schemas/language.schema';
 import { Cast, CastSchema } from 'src/database/schemas/cast.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import {
+  WatchHistory,
+  WatchHistorySchema,
+} from 'src/database/schemas/watchHistory.schema';
 // import { Rating, RatingSchema } from 'src/database/schemas/rating.schema';
 // import {
 //   Favorites,
@@ -38,6 +42,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       { name: Genre.name, schema: GenreSchema },
       { name: Language.name, schema: LanguageSchema },
       { name: Cast.name, schema: CastSchema },
+      { name: WatchHistory.name, schema: WatchHistorySchema },
     ]),
   ],
   controllers: [ListModelController],

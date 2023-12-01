@@ -14,6 +14,7 @@ import { FireBaseService } from 'src/models/base-repository/firebase/fire-base-s
 import { Language } from 'src/database/schemas/language.schema';
 import { JsonResponse } from './json-response.model';
 import { MESSAGES_CODE } from 'src/Constant/status.constants';
+import { WatchHistory } from 'src/database/schemas/watchHistory.schema';
 // import MovieDTO from './Dto/movie.Dto';
 
 @Injectable()
@@ -32,6 +33,8 @@ export class ListModelService {
     private langugeModel: mongoose.Model<Language>,
     @InjectModel(Cast.name)
     private castModel: mongoose.Model<Cast>,
+    @InjectModel(WatchHistory.name)
+    private watchingHistoryModel: mongoose.Model<WatchHistory>,
     private readonly firebaseService: FireBaseService,
   ) {}
 
@@ -321,7 +324,7 @@ export class ListModelService {
   }
 
   // Delete a movie
-  async deleteAMovie(id: ObjectId): Promise<any> {
+  async deleteAMovie(id: ObjectId, userId: any): Promise<any> {
     if (id === null) {
       return new NotFoundException(
         MESSAGES_CODE.DELETE_FAIL,
@@ -340,6 +343,9 @@ export class ListModelService {
       await this.firebaseService.deleteFile(deleteMovie.posterImage);
       await this.firebaseService.deleteFile(deleteMovie.movieLink);
       const videoId = deleteMovie._id.toString();
+      await this.watchingHistoryModel
+        .deleteOne({ videoId: videoId, userId: userId })
+        .exec();
       const deleteRating = await this.ratingModel
         .find({ videoId: videoId })
         .exec();
@@ -353,7 +359,7 @@ export class ListModelService {
   }
 
   // Delete list movie
-  async deleteListMovie(idList: ObjectId[]): Promise<any> {
+  async deleteListMovie(idList: ObjectId[], userId: any): Promise<any> {
     if (idList.length === 0) {
       return new NotFoundException(
         MESSAGES_CODE.DELETE_FAIL,
@@ -362,7 +368,7 @@ export class ListModelService {
     }
     let video;
     for (const id of idList) {
-      video = this.deleteAMovie(id);
+      video = this.deleteAMovie(id, userId);
     }
 
     return video;

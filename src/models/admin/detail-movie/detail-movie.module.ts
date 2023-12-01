@@ -15,6 +15,10 @@ import { ListModelService } from '../list-model/list-movie.service';
 import { FireBaseService } from 'src/models/base-repository/firebase/fire-base-service/fire-base-service.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import {
+  WatchHistory,
+  WatchHistorySchema,
+} from 'src/database/schemas/watchHistory.schema';
 
 @Module({
   imports: [
@@ -33,6 +37,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       { name: Genre.name, schema: RatingSchema },
       { name: Cast.name, schema: CastSchema },
       { name: Language.name, schema: LanguageSchema },
+      { name: WatchHistory.name, schema: WatchHistorySchema },
     ]),
   ],
   providers: [DetailMovieService, ListModelService, FireBaseService],

@@ -12,6 +12,7 @@ import { ObjectId } from 'mongodb';
 import { ListModelService } from '../list-model/list-movie.service';
 import { MESSAGES_CODE } from 'src/Constant/status.constants';
 import { MovieRes } from '../list-model/dto/Movie.model';
+import { WatchHistory } from 'src/database/schemas/watchHistory.schema';
 
 @Injectable()
 export class DetailMovieService {
@@ -28,6 +29,8 @@ export class DetailMovieService {
     // private castModel: mongoose.Model<Cast>,
     @InjectModel(Language.name)
     private languageModel: mongoose.Model<Language>,
+    @InjectModel(WatchHistory.name)
+    private watchHistoryModel: mongoose.Model<WatchHistory>,
     private readonly listModelService: ListModelService,
   ) {}
   async getDetailMovie(videoId: string): Promise<any> {
@@ -72,8 +75,11 @@ export class DetailMovieService {
     }
   }
 
-  async deleteAMovie(videoId: ObjectId): Promise<any> {
-    const deleteMovie = await this.listModelService.deleteAMovie(videoId);
+  async deleteAMovie(videoId: ObjectId, userId: any): Promise<any> {
+    const deleteMovie = await this.listModelService.deleteAMovie(
+      videoId,
+      userId,
+    );
     return deleteMovie;
   }
 

@@ -12,6 +12,10 @@ import {
 } from 'src/database/schemas/watchHistory.schema';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import {
+  Favorites,
+  FavoritesSchema,
+} from 'src/database/schemas/favorite.schema';
 @Module({
   imports: [
     JwtModule.registerAsync({
@@ -28,6 +32,7 @@ import { JwtModule } from '@nestjs/jwt';
       { name: Genre.name, schema: GenreSchema },
       { name: Rating.name, schema: RatingSchema },
       { name: WatchHistory.name, schema: WatchHistorySchema },
+      { name: Favorites.name, schema: FavoritesSchema },
     ]),
   ],
   controllers: [HomeController],

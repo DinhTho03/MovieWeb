@@ -25,14 +25,16 @@ const fire_base_service_service_1 = require("../../base-repository/firebase/fire
 const language_schema_1 = require("../../../database/schemas/language.schema");
 const json_response_model_1 = require("./json-response.model");
 const status_constants_1 = require("../../../Constant/status.constants");
+const watchHistory_schema_1 = require("../../../database/schemas/watchHistory.schema");
 let ListModelService = class ListModelService {
-    constructor(movieModel, favoritesModel, ratingModel, genreModel, langugeModel, castModel, firebaseService) {
+    constructor(movieModel, favoritesModel, ratingModel, genreModel, langugeModel, castModel, watchingHistoryModel, firebaseService) {
         this.movieModel = movieModel;
         this.favoritesModel = favoritesModel;
         this.ratingModel = ratingModel;
         this.genreModel = genreModel;
         this.langugeModel = langugeModel;
         this.castModel = castModel;
+        this.watchingHistoryModel = watchingHistoryModel;
         this.firebaseService = firebaseService;
         this.pageSize = 9;
     }
@@ -204,7 +206,7 @@ let ListModelService = class ListModelService {
             return { jsonResponse };
         }
     }
-    async deleteAMovie(id) {
+    async deleteAMovie(id, userId) {
         if (id === null) {
             return new common_1.NotFoundException(status_constants_1.MESSAGES_CODE.DELETE_FAIL, 'Video not found');
         }
@@ -217,6 +219,9 @@ let ListModelService = class ListModelService {
             await this.firebaseService.deleteFile(deleteMovie.posterImage);
             await this.firebaseService.deleteFile(deleteMovie.movieLink);
             const videoId = deleteMovie._id.toString();
+            await this.watchingHistoryModel
+                .deleteOne({ videoId: videoId, userId: userId })
+                .exec();
             const deleteRating = await this.ratingModel
                 .find({ videoId: videoId })
                 .exec();
@@ -228,13 +233,13 @@ let ListModelService = class ListModelService {
         }
         return status_constants_1.MESSAGES_CODE.DELETED_SUCCESS;
     }
-    async deleteListMovie(idList) {
+    async deleteListMovie(idList, userId) {
         if (idList.length === 0) {
             return new common_1.NotFoundException(status_constants_1.MESSAGES_CODE.DELETE_FAIL, 'Video not found');
         }
         let video;
         for (const id of idList) {
-            video = this.deleteAMovie(id);
+            video = this.deleteAMovie(id, userId);
         }
         return video;
     }
@@ -294,7 +299,8 @@ exports.ListModelService = ListModelService = __decorate([
     __param(3, (0, mongoose_1.InjectModel)(genre_schema_1.Genre.name)),
     __param(4, (0, mongoose_1.InjectModel)(language_schema_1.Language.name)),
     __param(5, (0, mongoose_1.InjectModel)(cast_schema_1.Cast.name)),
-    __metadata("design:paramtypes", [mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, fire_base_service_service_1.FireBaseService])
+    __param(6, (0, mongoose_1.InjectModel)(watchHistory_schema_1.WatchHistory.name)),
+    __metadata("design:paramtypes", [mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, fire_base_service_service_1.FireBaseService])
 ], ListModelService);
 function capitalizeFirstLetter(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);

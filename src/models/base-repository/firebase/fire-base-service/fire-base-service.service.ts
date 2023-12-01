@@ -14,8 +14,7 @@ import { InjectModel } from '@nestjs/mongoose';
 export class FireBaseService {
   constructor(
     @InjectModel(Video.name)
-    private movieModel: mongoose.Model<Video>, // @InjectModel(Cast.name)
-    // private castModel: mongoose.Model<Cast>,
+    private movieModel: mongoose.Model<Video>,
   ) {}
   async upload(file: Express.Multer.File): Promise<any> {
     const tempLocalFile = path.join(os.tmpdir(), file.originalname);
@@ -49,7 +48,7 @@ export class FireBaseService {
       if (file.size > maxSize) {
         throw new HttpException(
           `File size exceeds ${maxSize / (1024 * 1024)}MB`,
-          200,
+          500,
         );
       }
       // Write buffer to local file
@@ -71,7 +70,7 @@ export class FireBaseService {
         fs.unlinkSync(tempLocalFile);
       }
 
-      throw new HttpException(error.toString(), 200);
+      throw new HttpException(error.toString(), 500);
     }
   }
 

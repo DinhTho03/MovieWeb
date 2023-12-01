@@ -18,6 +18,7 @@ const rating_schema_1 = require("../../../database/schemas/rating.schema");
 const watchHistory_schema_1 = require("../../../database/schemas/watchHistory.schema");
 const config_1 = require("@nestjs/config");
 const jwt_1 = require("@nestjs/jwt");
+const favorite_schema_1 = require("../../../database/schemas/favorite.schema");
 let HomeModule = class HomeModule {
 };
 exports.HomeModule = HomeModule;
@@ -38,6 +39,7 @@ exports.HomeModule = HomeModule = __decorate([
                 { name: genre_schema_1.Genre.name, schema: genre_schema_1.GenreSchema },
                 { name: rating_schema_1.Rating.name, schema: rating_schema_1.RatingSchema },
                 { name: watchHistory_schema_1.WatchHistory.name, schema: watchHistory_schema_1.WatchHistorySchema },
+                { name: favorite_schema_1.Favorites.name, schema: favorite_schema_1.FavoritesSchema },
             ]),
         ],
         controllers: [home_controller_1.HomeController],

@@ -9,6 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { AuthPayload } from './dto/auth-payload.interface';
 import { JsonResponse } from '../admin/list-model/json-response.model';
 import { LoginRes } from './dto/loginRes.dto';
+import { MESSAGES_CODE } from 'src/Constant/status.constants';
 
 export interface IAuthService {
   loginUser(loginRes: LoginRes): Promise<any>;
@@ -25,16 +26,18 @@ export class AuthService implements IAuthService {
     private readonly jwtService: JwtService,
   ) {}
   async loginUser(loginRes: LoginRes): Promise<any> {
+    const jsonResponse = new JsonResponse();
     const user = await this.userModel.findOne({ email: loginRes.email }).exec();
-    console.log(typeof user.email);
-    console.log(user);
     const authPassword = await this.comparePassword(
       loginRes.password,
       user.password,
     );
     if (authPassword) {
       const token = await this.generateToken(user);
-      return token;
+      jsonResponse.message = MESSAGES_CODE.LOGIN_SUCCESS;
+      jsonResponse.result = token;
+      jsonResponse.success = true;
+      return jsonResponse;
     }
   }
   async registerUser(registerRes: RegisterRes): Promise<any> {
@@ -82,7 +85,11 @@ export class AuthService implements IAuthService {
       registrationDate: user.registrationDate,
       id: user._id,
     };
-    return { access_token: this.jwtService.sign(payload) };
+    return {
+      access_token: this.jwtService.sign(payload),
+      roleId: roleId,
+      name: user.firstName + ' ' + user.lastName,
+    };
   }
   async hashPassword(password: string): Promise<string> {
     return await bcrypt.hash(password, 12);

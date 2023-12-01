@@ -12,6 +12,7 @@ import {
   Logger,
   Put,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { ListModelService } from './list-movie.service';
 import { ObjectId } from 'mongodb';
@@ -24,6 +25,7 @@ import {
 } from '@nestjs/platform-express';
 import { Roles } from 'src/models/auth/decorator/roles.decorator';
 import { RolesGuard } from 'src/models/auth/guards/roles.guard';
+import { TestAPI } from './dto/genre.Dto';
 // import { JwtAuthGuard } from 'src/models/auth/strategies/auth.guard';
 // import { RolesGuard } from 'src/models/auth/strategies/roles.guard';
 // import { Roles } from 'src/models/auth/strategies/roles.decorator';
@@ -62,10 +64,14 @@ export class ListModelController {
   @Delete()
   @UseGuards(RolesGuard)
   @Roles('Admin')
-  async deleteAMovie(@Query('id') id: string) {
+  async deleteAMovie(@Query('id') id: string, @Request() req) {
     // Convert string to ObjectId
     const objectId = new (ObjectId as any)(id);
-    const deleteMovie = await this.listModelService.deleteAMovie(objectId);
+    const userId = req.user.id;
+    const deleteMovie = await this.listModelService.deleteAMovie(
+      objectId,
+      userId,
+    );
     return deleteMovie;
   }
 
@@ -73,12 +79,15 @@ export class ListModelController {
   @Delete('/deleteListMovie')
   @UseGuards(RolesGuard)
   @Roles('Admin')
-  async deleteListMovie(@Body('ids') ids: string[]) {
+  async deleteListMovie(@Body('ids') ids: string[], @Request() req) {
     // Convert string to ObjectId
     console.log(ids);
+    const userId = req.user.id;
     const objectIdList = ids.map((id) => new (ObjectId as any)(id));
-    const deleteListMovie =
-      await this.listModelService.deleteListMovie(objectIdList);
+    const deleteListMovie = await this.listModelService.deleteListMovie(
+      objectIdList,
+      userId,
+    );
     return deleteListMovie;
   }
 
@@ -96,6 +105,7 @@ export class ListModelController {
   async addMovie(@Body() modelRequest: MovieRes, @UploadedFiles() files) {
     console.log(modelRequest);
     console.log(files.posterImage[0]);
+    console.log(files.movieUrl[0]);
     const addMovie = await this.listModelService.addMovie(modelRequest, files);
 
     return addMovie;
@@ -128,9 +138,16 @@ export class ListModelController {
     return addMovie;
   }
   @Post('/upload')
-  @UseInterceptors(FileFieldsInterceptor([{ name: 'movieUrl', maxCount: 1 }]))
-  async addCast(@UploadedFiles() files) {
-    console.log(files);
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'files', maxCount: 1 },
+      { name: 'movies', maxCount: 1 },
+    ]),
+  )
+  async addCast(@Body() test: TestAPI, @UploadedFiles() files) {
+    console.log(test);
+    console.log(files.files[0]);
+    console.log(files.movies[0]);
     return files;
   }
 

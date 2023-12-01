@@ -21,6 +21,7 @@ const list_movie_service_1 = require("../list-model/list-movie.service");
 const fire_base_service_service_1 = require("../../base-repository/firebase/fire-base-service/fire-base-service.service");
 const jwt_1 = require("@nestjs/jwt");
 const config_1 = require("@nestjs/config");
+const watchHistory_schema_1 = require("../../../database/schemas/watchHistory.schema");
 let DetailMovieModule = class DetailMovieModule {
 };
 exports.DetailMovieModule = DetailMovieModule;
@@ -42,6 +43,7 @@ exports.DetailMovieModule = DetailMovieModule = __decorate([
                 { name: genre_schema_1.Genre.name, schema: rating_schema_1.RatingSchema },
                 { name: cast_schema_1.Cast.name, schema: cast_schema_1.CastSchema },
                 { name: language_schema_1.Language.name, schema: language_schema_1.LanguageSchema },
+                { name: watchHistory_schema_1.WatchHistory.name, schema: watchHistory_schema_1.WatchHistorySchema },
             ]),
         ],
         providers: [detail_movie_service_1.DetailMovieService, list_movie_service_1.ListModelService, fire_base_service_service_1.FireBaseService],

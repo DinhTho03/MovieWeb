@@ -20,6 +20,7 @@ const language_schema_1 = require("../../../database/schemas/language.schema");
 const cast_schema_1 = require("../../../database/schemas/cast.schema");
 const jwt_1 = require("@nestjs/jwt");
 const config_1 = require("@nestjs/config");
+const watchHistory_schema_1 = require("../../../database/schemas/watchHistory.schema");
 let ListModelModule = class ListModelModule {
 };
 exports.ListModelModule = ListModelModule;
@@ -41,6 +42,7 @@ exports.ListModelModule = ListModelModule = __decorate([
                 { name: genre_schema_1.Genre.name, schema: genre_schema_1.GenreSchema },
                 { name: language_schema_1.Language.name, schema: language_schema_1.LanguageSchema },
                 { name: cast_schema_1.Cast.name, schema: cast_schema_1.CastSchema },
+                { name: watchHistory_schema_1.WatchHistory.name, schema: watchHistory_schema_1.WatchHistorySchema },
             ]),
         ],
         controllers: [list_movie_controller_1.ListModelController],

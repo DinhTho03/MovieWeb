@@ -23,13 +23,15 @@ const video_schema_1 = require("../../../database/schemas/video.schema");
 const language_schema_1 = require("../../../database/schemas/language.schema");
 const list_movie_service_1 = require("../list-model/list-movie.service");
 const status_constants_1 = require("../../../Constant/status.constants");
+const watchHistory_schema_1 = require("../../../database/schemas/watchHistory.schema");
 let DetailMovieService = class DetailMovieService {
-    constructor(movieModel, favoritesModel, ratingModel, genreModel, languageModel, listModelService) {
+    constructor(movieModel, favoritesModel, ratingModel, genreModel, languageModel, watchHistoryModel, listModelService) {
         this.movieModel = movieModel;
         this.favoritesModel = favoritesModel;
         this.ratingModel = ratingModel;
         this.genreModel = genreModel;
         this.languageModel = languageModel;
+        this.watchHistoryModel = watchHistoryModel;
         this.listModelService = listModelService;
     }
     async getDetailMovie(videoId) {
@@ -70,8 +72,8 @@ let DetailMovieService = class DetailMovieService {
             return new common_1.NotFoundException(status_constants_1.MESSAGES_CODE.GET_FAIL, 'Video not found');
         }
     }
-    async deleteAMovie(videoId) {
-        const deleteMovie = await this.listModelService.deleteAMovie(videoId);
+    async deleteAMovie(videoId, userId) {
+        const deleteMovie = await this.listModelService.deleteAMovie(videoId, userId);
         return deleteMovie;
     }
     async updateAMovie(id, modelRequest, files) {
@@ -115,6 +117,7 @@ exports.DetailMovieService = DetailMovieService = __decorate([
     __param(2, (0, mongoose_1.InjectModel)(rating_schema_1.Rating.name)),
     __param(3, (0, mongoose_1.InjectModel)(genre_schema_1.Genre.name)),
     __param(4, (0, mongoose_1.InjectModel)(language_schema_1.Language.name)),
-    __metadata("design:paramtypes", [mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, list_movie_service_1.ListModelService])
+    __param(5, (0, mongoose_1.InjectModel)(watchHistory_schema_1.WatchHistory.name)),
+    __metadata("design:paramtypes", [mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, list_movie_service_1.ListModelService])
 ], DetailMovieService);
 //# sourceMappingURL=detail-movie.service.js.map

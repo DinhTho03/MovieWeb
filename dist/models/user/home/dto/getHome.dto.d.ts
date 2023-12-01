@@ -23,4 +23,5 @@ export declare class RatingDTO {
     posterImage: string;
     averageRating: number;
     mpaRatings: string;
+    favorite: any;
 }

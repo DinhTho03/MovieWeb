@@ -20,6 +20,6 @@ __decorate([
 ], TestAPI.prototype, "test", void 0);
 __decorate([
     (0, class_validator_1.IsArray)(),
-    __metadata("design:type", Array)
+    __metadata("design:type", String)
 ], TestAPI.prototype, "cast", void 0);
 //# sourceMappingURL=genre.Dto.js.map

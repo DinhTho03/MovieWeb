@@ -23,12 +23,14 @@ const watchHistory_schema_1 = require("../../../database/schemas/watchHistory.sc
 const json_response_model_1 = require("../../admin/list-model/json-response.model");
 const getHome_dto_1 = require("./dto/getHome.dto");
 const status_constants_1 = require("../../../Constant/status.constants");
+const favorite_schema_1 = require("../../../database/schemas/favorite.schema");
 let HomeService = class HomeService {
-    constructor(movieModel, genreModel, ratingModel, watchHistoryModel) {
+    constructor(movieModel, genreModel, ratingModel, watchHistoryModel, favoritesModel) {
         this.movieModel = movieModel;
         this.genreModel = genreModel;
         this.ratingModel = ratingModel;
         this.watchHistoryModel = watchHistoryModel;
+        this.favoritesModel = favoritesModel;
     }
     async GetMovie(userId) {
         const jsonResponse = new json_response_model_1.JsonResponse();
@@ -45,14 +47,16 @@ let HomeService = class HomeService {
                 $sort: { averageRating: -1 },
             },
             {
-                $limit: 3,
+                $limit: 10,
             },
         ]);
         console.log(rating);
         for (const item of rating) {
-            console.log(item);
             const video = await this.movieModel.findOne({ _id: item._id }).exec();
             const genre = await this.fetchGenres(video.genreId);
+            const favoritesCount = await this.favoritesModel.countDocuments({
+                videoId: item._id,
+            });
             getHomeDTO.ratingDTOHome.push({
                 id: item._id,
                 genre: genre,
@@ -60,16 +64,18 @@ let HomeService = class HomeService {
                 posterImage: video.posterImage,
                 averageRating: item.averageRating,
                 mpaRatings: item.mpaRatings,
+                favorite: favoritesCount,
             });
         }
-        console.log(123);
+        getHomeDTO.ratingDTOHome.sort((a, b) => b.favorite - a.favorite);
         getHomeDTO.watchingHistoryHome = [];
         const watchingHistory = await this.watchHistoryModel
             .find({ userId: userId })
             .sort({ watchAt: -1 })
-            .limit(5)
+            .limit(10)
             .exec();
         for (const item of watchingHistory) {
+            console.log(item);
             const video = await this.movieModel.findOne({ _id: item.videoId }).exec();
             console.log(video);
             const genre = await this.fetchGenres(video.genreId);
@@ -83,7 +89,7 @@ let HomeService = class HomeService {
         getHomeDTO.getMovieHomeDTO = [];
         const getMovieTrailers = await this.movieModel
             .find()
-            .sort({ additionDate: 1 })
+            .sort({ additionDate: -1 })
             .limit(3)
             .exec();
         for (const item of getMovieTrailers) {
@@ -120,6 +126,7 @@ exports.HomeService = HomeService = __decorate([
     __param(1, (0, mongoose_1.InjectModel)(genre_schema_1.Genre.name)),
     __param(2, (0, mongoose_1.InjectModel)(rating_schema_1.Rating.name)),
     __param(3, (0, mongoose_1.InjectModel)(watchHistory_schema_1.WatchHistory.name)),
-    __metadata("design:paramtypes", [mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model])
+    __param(4, (0, mongoose_1.InjectModel)(favorite_schema_1.Favorites.name)),
+    __metadata("design:paramtypes", [mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model, mongoose_2.default.Model])
 ], HomeService);
 //# sourceMappingURL=home.service.js.map

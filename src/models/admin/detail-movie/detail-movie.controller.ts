@@ -9,6 +9,7 @@ import {
   UploadedFiles,
   UseGuards,
   UseInterceptors,
+  Request,
 } from '@nestjs/common';
 import { DetailMovieService } from './detail-movie.service';
 import { ObjectId } from 'mongodb';
@@ -29,9 +30,10 @@ export class DetailMovieController {
   @Delete()
   @UseGuards(RolesGuard)
   @Roles('Admin')
-  async deleteMovie(@Query('id') id: string) {
+  async deleteMovie(@Query('id') id: string, @Request() req) {
     const objectId = new (ObjectId as any)(id);
-    const deleteMovie = await this.detailMovie.deleteAMovie(objectId);
+    const userId = req.user.id;
+    const deleteMovie = await this.detailMovie.deleteAMovie(objectId, userId);
     return deleteMovie;
   }
 

@@ -27,9 +27,10 @@ let DetailMovieController = class DetailMovieController {
     async getDetailMovie(id) {
         return await this.detailMovie.getDetailMovie(id);
     }
-    async deleteMovie(id) {
+    async deleteMovie(id, req) {
         const objectId = new mongodb_1.ObjectId(id);
-        const deleteMovie = await this.detailMovie.deleteAMovie(objectId);
+        const userId = req.user.id;
+        const deleteMovie = await this.detailMovie.deleteAMovie(objectId, userId);
         return deleteMovie;
     }
     async updateMovie(id, modelRequest, files) {
@@ -53,8 +54,9 @@ __decorate([
     (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)('Admin'),
     __param(0, (0, common_1.Query)('id')),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], DetailMovieController.prototype, "deleteMovie", null);
 __decorate([

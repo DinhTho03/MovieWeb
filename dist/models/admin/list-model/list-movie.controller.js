@@ -22,6 +22,7 @@ const Movie_model_1 = require("./dto/Movie.model");
 const platform_express_1 = require("@nestjs/platform-express");
 const roles_decorator_1 = require("../../auth/decorator/roles.decorator");
 const roles_guard_1 = require("../../auth/guards/roles.guard");
+const genre_Dto_1 = require("./dto/genre.Dto");
 let ListModelController = ListModelController_1 = class ListModelController {
     constructor(listModelService, firebaseService) {
         this.listModelService = listModelService;
@@ -31,20 +32,23 @@ let ListModelController = ListModelController_1 = class ListModelController {
     async findAll(searchQuery, additionDate, sortbyView, sortByLike, sortByRating, pageNumber = 1) {
         return await this.listModelService.FindAll(searchQuery, additionDate, sortbyView, sortByLike, sortByRating, pageNumber);
     }
-    async deleteAMovie(id) {
+    async deleteAMovie(id, req) {
         const objectId = new mongodb_1.ObjectId(id);
-        const deleteMovie = await this.listModelService.deleteAMovie(objectId);
+        const userId = req.user.id;
+        const deleteMovie = await this.listModelService.deleteAMovie(objectId, userId);
         return deleteMovie;
     }
-    async deleteListMovie(ids) {
+    async deleteListMovie(ids, req) {
         console.log(ids);
+        const userId = req.user.id;
         const objectIdList = ids.map((id) => new mongodb_1.ObjectId(id));
-        const deleteListMovie = await this.listModelService.deleteListMovie(objectIdList);
+        const deleteListMovie = await this.listModelService.deleteListMovie(objectIdList, userId);
         return deleteListMovie;
     }
     async addMovie(modelRequest, files) {
         console.log(modelRequest);
         console.log(files.posterImage[0]);
+        console.log(files.movieUrl[0]);
         const addMovie = await this.listModelService.addMovie(modelRequest, files);
         return addMovie;
     }
@@ -53,8 +57,10 @@ let ListModelController = ListModelController_1 = class ListModelController {
         const addMovie = await this.listModelService.updateAMovie(objectId, modelRequest, files);
         return addMovie;
     }
-    async addCast(files) {
-        console.log(files);
+    async addCast(test, files) {
+        console.log(test);
+        console.log(files.files[0]);
+        console.log(files.movies[0]);
         return files;
     }
 };
@@ -78,8 +84,9 @@ __decorate([
     (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)('Admin'),
     __param(0, (0, common_1.Query)('id')),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], ListModelController.prototype, "deleteAMovie", null);
 __decorate([
@@ -87,8 +94,9 @@ __decorate([
     (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)('Admin'),
     __param(0, (0, common_1.Body)('ids')),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Array]),
+    __metadata("design:paramtypes", [Array, Object]),
     __metadata("design:returntype", Promise)
 ], ListModelController.prototype, "deleteListMovie", null);
 __decorate([
@@ -125,10 +133,14 @@ __decorate([
 ], ListModelController.prototype, "updateMovie", null);
 __decorate([
     (0, common_1.Post)('/upload'),
-    (0, common_1.UseInterceptors)((0, platform_express_1.FileFieldsInterceptor)([{ name: 'movieUrl', maxCount: 1 }])),
-    __param(0, (0, common_1.UploadedFiles)()),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileFieldsInterceptor)([
+        { name: 'files', maxCount: 1 },
+        { name: 'movies', maxCount: 1 },
+    ])),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.UploadedFiles)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [genre_Dto_1.TestAPI, Object]),
     __metadata("design:returntype", Promise)
 ], ListModelController.prototype, "addCast", null);
 exports.ListModelController = ListModelController = ListModelController_1 = __decorate([

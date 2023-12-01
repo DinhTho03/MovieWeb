@@ -21,6 +21,7 @@ const role_schema_1 = require("../../database/schemas/role.schema");
 const jwt_1 = require("@nestjs/jwt");
 const bcrypt = require("bcrypt");
 const json_response_model_1 = require("../admin/list-model/json-response.model");
+const status_constants_1 = require("../../Constant/status.constants");
 let AuthService = class AuthService {
     constructor(userModel, roleModel, jwtService) {
         this.userModel = userModel;
@@ -28,13 +29,15 @@ let AuthService = class AuthService {
         this.jwtService = jwtService;
     }
     async loginUser(loginRes) {
+        const jsonResponse = new json_response_model_1.JsonResponse();
         const user = await this.userModel.findOne({ email: loginRes.email }).exec();
-        console.log(typeof user.email);
-        console.log(user);
         const authPassword = await this.comparePassword(loginRes.password, user.password);
         if (authPassword) {
             const token = await this.generateToken(user);
-            return token;
+            jsonResponse.message = status_constants_1.MESSAGES_CODE.LOGIN_SUCCESS;
+            jsonResponse.result = token;
+            jsonResponse.success = true;
+            return jsonResponse;
         }
     }
     async registerUser(registerRes) {
@@ -80,7 +83,11 @@ let AuthService = class AuthService {
             registrationDate: user.registrationDate,
             id: user._id,
         };
-        return { access_token: this.jwtService.sign(payload) };
+        return {
+            access_token: this.jwtService.sign(payload),
+            roleId: roleId,
+            name: user.firstName + ' ' + user.lastName,
+        };
     }
     async hashPassword(password) {
         return await bcrypt.hash(password, 12);

@@ -5,5 +5,5 @@ export class TestAPI {
   @IsString()
   test: string;
   @IsArray()
-  cast: CastRes[];
+  cast: string;
 }

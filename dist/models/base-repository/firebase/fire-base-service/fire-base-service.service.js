@@ -53,7 +53,7 @@ let FireBaseService = class FireBaseService {
                 throw new common_1.HttpException('File type not allowed (jpg/jpeg/png/gif)', 200);
             }
             if (file.size > maxSize) {
-                throw new common_1.HttpException(`File size exceeds ${maxSize / (1024 * 1024)}MB`, 200);
+                throw new common_1.HttpException(`File size exceeds ${maxSize / (1024 * 1024)}MB`, 500);
             }
             fs.writeFileSync(tempLocalFile, file.buffer);
             this.uploadToStorage(tempLocalFile, fileName, file.mimetype, fileType);
@@ -70,7 +70,7 @@ let FireBaseService = class FireBaseService {
             if (fs.existsSync(tempLocalFile)) {
                 fs.unlinkSync(tempLocalFile);
             }
-            throw new common_1.HttpException(error.toString(), 200);
+            throw new common_1.HttpException(error.toString(), 500);
         }
     }
     async uploadToStorage(tempLocalFile, fileName, mimeType, fileType) {

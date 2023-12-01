@@ -9,6 +9,7 @@ import { MovieRes } from './dto/Movie.model';
 import { Cast } from 'src/database/schemas/cast.schema';
 import { FireBaseService } from 'src/models/base-repository/firebase/fire-base-service/fire-base-service.service';
 import { Language } from 'src/database/schemas/language.schema';
+import { WatchHistory } from 'src/database/schemas/watchHistory.schema';
 export declare class ListModelService {
     private movieModel;
     private favoritesModel;
@@ -16,14 +17,15 @@ export declare class ListModelService {
     private genreModel;
     private langugeModel;
     private castModel;
+    private watchingHistoryModel;
     private readonly firebaseService;
     private pageSize;
-    constructor(movieModel: mongoose.Model<Video>, favoritesModel: mongoose.Model<Favorites>, ratingModel: mongoose.Model<Rating>, genreModel: mongoose.Model<Genre>, langugeModel: mongoose.Model<Language>, castModel: mongoose.Model<Cast>, firebaseService: FireBaseService);
+    constructor(movieModel: mongoose.Model<Video>, favoritesModel: mongoose.Model<Favorites>, ratingModel: mongoose.Model<Rating>, genreModel: mongoose.Model<Genre>, langugeModel: mongoose.Model<Language>, castModel: mongoose.Model<Cast>, watchingHistoryModel: mongoose.Model<WatchHistory>, firebaseService: FireBaseService);
     FindAll(searchQuery: string | undefined, additionDate: boolean | undefined, sortbyView: boolean | undefined, sortByLike: boolean | undefined, sortByRating: boolean | undefined, pageNumber?: number): Promise<MoviesResponseDTO>;
     updateAMovie(id: ObjectId, modelRequest: MovieRes, files: any): Promise<any>;
     addMovie(modelRequest: MovieRes, files: any): Promise<any>;
-    deleteAMovie(id: ObjectId): Promise<any>;
-    deleteListMovie(idList: ObjectId[]): Promise<any>;
+    deleteAMovie(id: ObjectId, userId: any): Promise<any>;
+    deleteListMovie(idList: ObjectId[], userId: any): Promise<any>;
     private fetchRatings;
     private fetchFavorites;
     private fetchGenres;

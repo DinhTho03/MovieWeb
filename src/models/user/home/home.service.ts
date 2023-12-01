@@ -9,6 +9,7 @@ import { WatchHistory } from 'src/database/schemas/watchHistory.schema';
 import { JsonResponse } from 'src/models/admin/list-model/json-response.model';
 import { GetHomeDTO } from './dto/getHome.dto';
 import { MESSAGES_CODE } from 'src/Constant/status.constants';
+import { Favorites } from 'src/database/schemas/favorite.schema';
 
 @Injectable()
 export class HomeService {
@@ -23,6 +24,8 @@ export class HomeService {
     private ratingModel: mongoose.Model<Rating>,
     @InjectModel(WatchHistory.name)
     private watchHistoryModel: mongoose.Model<WatchHistory>,
+    @InjectModel(Favorites.name)
+    private favoritesModel: mongoose.Model<Favorites>,
   ) {}
   async GetMovie(userId: any): Promise<any> {
     const jsonResponse = new JsonResponse();
@@ -39,15 +42,16 @@ export class HomeService {
         $sort: { averageRating: -1 },
       },
       {
-        $limit: 3,
+        $limit: 10,
       },
     ]);
     console.log(rating);
     for (const item of rating) {
-      console.log(item);
       const video = await this.movieModel.findOne({ _id: item._id }).exec();
       const genre = await this.fetchGenres(video.genreId);
-
+      const favoritesCount = await this.favoritesModel.countDocuments({
+        videoId: item._id,
+      });
       getHomeDTO.ratingDTOHome.push({
         id: item._id,
         genre: genre,
@@ -55,16 +59,18 @@ export class HomeService {
         posterImage: video.posterImage,
         averageRating: item.averageRating,
         mpaRatings: item.mpaRatings,
+        favorite: favoritesCount,
       });
     }
-    console.log(123);
+    getHomeDTO.ratingDTOHome.sort((a, b) => b.favorite - a.favorite);
     getHomeDTO.watchingHistoryHome = [];
     const watchingHistory = await this.watchHistoryModel
       .find({ userId: userId })
       .sort({ watchAt: -1 })
-      .limit(5)
+      .limit(10)
       .exec();
     for (const item of watchingHistory) {
+      console.log(item);
       const video = await this.movieModel.findOne({ _id: item.videoId }).exec();
       console.log(video);
       const genre = await this.fetchGenres(video.genreId);
@@ -78,7 +84,7 @@ export class HomeService {
     getHomeDTO.getMovieHomeDTO = [];
     const getMovieTrailers = await this.movieModel
       .find()
-      .sort({ additionDate: 1 })
+      .sort({ additionDate: -1 })
       .limit(3)
       .exec();
 
